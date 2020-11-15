@@ -1,5 +1,6 @@
 package com.hedgehogsmind.springcouch2r.beans;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hedgehogsmind.springcouch2r.annotations.Couch2r;
 import com.hedgehogsmind.springcouch2r.configuration.Couch2rConfiguration;
 import com.hedgehogsmind.springcouch2r.configuration.ValidatedAndNormalizedCouch2rConfiguration;
@@ -19,19 +20,19 @@ import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
 import javax.persistence.metamodel.EntityType;
 import java.lang.annotation.Annotation;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Component
 @RequiredArgsConstructor
-public class Couch2rInitializer {
+public class Couch2rCore {
 
     private final ApplicationContext applicationContext;
 
-    private final Couch2rHandlerMapping couch2rHandlerMapping;
-
     private final EntityManager entityManager;
+
+    private final Optional<ObjectMapper> globalObjectMapper;
+
+    private ObjectMapper couch2rObjectMapper;
 
     private Couch2rConfiguration couch2rConfiguration;
 
@@ -41,9 +42,12 @@ public class Couch2rInitializer {
 
     private Map<EntityType, Couch2r> couch2rEntities;
 
+    private Set<Couch2rMapping> couch2rMappings = new HashSet<>();
+
     @PostConstruct
     public void setup() {
         fetchCouch2rConfiguration();
+        applyCouch2rConfiguration();
 
         // Bean stuff
         collectCouch2rBeans();
@@ -77,6 +81,29 @@ public class Couch2rInitializer {
             throw new IllegalStateException("No unique Couch2rConfigurations found."); // TODO @peter own exception
         } catch ( NoSuchBeanDefinitionException e ) {
             throw new IllegalStateException("No Couch2rConfiguration found."); // TODO @peter own exception
+        }
+    }
+
+    /**
+     * Does the following:
+     * <ul>
+     *     <li>{@link #setupObjectMapper()}</li>
+     * </ul>
+     */
+    protected void applyCouch2rConfiguration() {
+        setupObjectMapper();
+    }
+
+    /**
+     * Sets object mapper either to one specified in {@link Couch2rConfiguration}, to global one, or creates a new one.
+     */
+    protected void setupObjectMapper() {
+        if ( couch2rConfiguration.getCouch2rObjectMapper().isPresent() ) {
+            this.couch2rObjectMapper = couch2rConfiguration.getCouch2rObjectMapper().get();
+        } else if ( globalObjectMapper.isPresent() ) {
+            this.couch2rObjectMapper = globalObjectMapper.get();
+        } else {
+            this.couch2rObjectMapper = new ObjectMapper();
         }
     }
 
@@ -182,11 +209,7 @@ public class Couch2rInitializer {
     protected void setupRepositories() {
         if ( couch2rRepositories == null ) throw new IllegalStateException("No Couch2r repositories have been collected yet.");
 
-        couch2rRepositories.forEach((bean, anno) -> {
-            couch2rHandlerMapping.registerMapping(
-                    createMappingForRepository(bean, anno)
-            );
-        });
+        couch2rRepositories.forEach((bean, anno) -> couch2rMappings.add(createMappingForRepository(bean, anno)) );
     }
 
     /**
@@ -221,11 +244,7 @@ public class Couch2rInitializer {
         //      >> b: Repo exists and is not managed
         //      >> c: Repo does not exist (already handled)
 
-        couch2rEntities.forEach((et, anno) -> {
-            couch2rHandlerMapping.registerMapping(
-                    createMappingForEntity(et, anno)
-            );
-        });
+        couch2rEntities.forEach((et, anno) -> couch2rMappings.add(createMappingForEntity(et, anno)) );
     }
 
     /**
@@ -296,4 +315,15 @@ public class Couch2rInitializer {
         return entityType.get();
     }
 
+    public ObjectMapper getCouch2rObjectMapper() {
+        return couch2rObjectMapper;
+    }
+
+    public Couch2rConfiguration getCouch2rConfiguration() {
+        return couch2rConfiguration;
+    }
+
+    public Set<Couch2rMapping> getCouch2rMappings() {
+        return couch2rMappings;
+    }
 }

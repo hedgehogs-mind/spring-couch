@@ -2,6 +2,7 @@ package com.hedgehogsmind.springcouch2r.beans;
 
 import com.hedgehogsmind.springcouch2r.data.Couch2rMapping;
 import com.hedgehogsmind.springcouch2r.util.Couch2rPathUtil;
+import lombok.RequiredArgsConstructor;
 import org.springframework.core.Ordered;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerExecutionChain;
@@ -12,9 +13,10 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 
 @Component
+@RequiredArgsConstructor
 public class Couch2rHandlerMapping implements HandlerMapping, Ordered {
 
-    private Set<Couch2rMapping> mappings = new HashSet<>();
+    private final Couch2rCore couch2rCore;
 
     private Map<String, Couch2rMapping> mappingCache = new HashMap<>();
 
@@ -55,7 +57,7 @@ public class Couch2rHandlerMapping implements HandlerMapping, Ordered {
 
         if ( cachedMapping != null ) return cachedMapping;
 
-        final Optional<Couch2rMapping> matchingMapping = mappings.stream()
+        final Optional<Couch2rMapping> matchingMapping = couch2rCore.getCouch2rMappings().stream()
                 .filter(mapping -> path.startsWith(mapping.getPathWithTrailingSlash()))
                 .findAny();
 
@@ -65,14 +67,4 @@ public class Couch2rHandlerMapping implements HandlerMapping, Ordered {
         return matchingMapping.get();
     }
 
-    /**
-     * Adds mapping. Clears cache.
-     *
-     * @param couch2rMapping Mapping.
-     */
-    public void registerMapping(final Couch2rMapping couch2rMapping) {
-        this.mappings.add(couch2rMapping);
-
-        if ( !this.mappingCache.isEmpty() ) this.mappingCache.clear();
-    }
 }

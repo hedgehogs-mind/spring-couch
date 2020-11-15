@@ -1,7 +1,10 @@
 package com.hedgehogsmind.springcouch2r.configuration;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import java.util.Optional;
 
 public class ValidatedAndNormalizedCouch2rConfigurationTest {
 
@@ -9,6 +12,11 @@ public class ValidatedAndNormalizedCouch2rConfigurationTest {
         @Override
         public String getCouch2rBasePath() {
             return null;
+        }
+
+        @Override
+        public Optional<ObjectMapper> getCouch2rObjectMapper() {
+            return Optional.empty();
         }
     }
 

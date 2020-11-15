@@ -1,7 +1,10 @@
 package com.hedgehogsmind.springcouch2r.demo;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hedgehogsmind.springcouch2r.configuration.Couch2rConfiguration;
 import org.springframework.stereotype.Component;
+
+import java.util.Optional;
 
 @Component
 public class MyCouch2rConfiguration implements Couch2rConfiguration {
@@ -11,4 +14,8 @@ public class MyCouch2rConfiguration implements Couch2rConfiguration {
         return "/api/couch2r";
     }
 
+    @Override
+    public Optional<ObjectMapper> getCouch2rObjectMapper() {
+        return Optional.empty();
+    }
 }

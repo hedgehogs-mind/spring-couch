@@ -16,8 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 @RequiredArgsConstructor
 public class Couch2rHandlerAdapter implements HandlerAdapter {
 
-    // TODO @peter does this always work?
-    private final ObjectMapper objectMapper;
+    private final Couch2rCore couch2rCore;
 
     @Override
     public boolean supports(Object handler) {
@@ -26,8 +25,16 @@ public class Couch2rHandlerAdapter implements HandlerAdapter {
 
     @Override
     public ModelAndView handle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        final ResponseEntity responseEntity = ((Couch2rMapping)handler).handle(request);
-        Couch2rResponseUtil.writeResponseEntity(responseEntity, response, objectMapper);
+        final ResponseEntity responseEntity = ((Couch2rMapping)handler).handle(
+                request,
+                couch2rCore.getCouch2rObjectMapper()
+        );
+
+        Couch2rResponseUtil.writeResponseEntity(
+                responseEntity,
+                response,
+                couch2rCore.getCouch2rObjectMapper()
+        );
 
         return null;
     }

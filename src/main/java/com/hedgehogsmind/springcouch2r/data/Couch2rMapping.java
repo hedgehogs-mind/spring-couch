@@ -1,19 +1,22 @@
 package com.hedgehogsmind.springcouch2r.data;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hedgehogsmind.springcouch2r.exceptions.Couch2rIdTypeParsingNotSupportedException;
 import com.hedgehogsmind.springcouch2r.exceptions.Couch2rIdValueNotParsableException;
 import com.hedgehogsmind.springcouch2r.util.Couch2rPathUtil;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.web.util.UrlPathHelper;
 
 import javax.persistence.metamodel.EntityType;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -28,6 +31,7 @@ import java.util.Optional;
  * </p>
  */
 @Getter
+@Slf4j
 public class Couch2rMapping {
 
     private final String pathWithTrailingSlash;
@@ -44,7 +48,7 @@ public class Couch2rMapping {
     }
 
     // TODO @peter docs
-    public ResponseEntity handle(final HttpServletRequest request) {
+    public ResponseEntity handle(final HttpServletRequest request, final ObjectMapper objectMapper) {
         final String path = Couch2rPathUtil.normalizeWithTrailingSlash(
                 UrlPathHelper.defaultInstance.getPathWithinApplication(request)
         );
@@ -58,6 +62,7 @@ public class Couch2rMapping {
 
         switch ( request.getMethod() ) {
             case "GET": return handleGet(additionalParts);
+            case "POST": return handlePost(request, additionalParts, objectMapper);
             default: return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build();
         }
     }
@@ -119,6 +124,48 @@ public class Couch2rMapping {
         } else {
             return ResponseEntity.badRequest().body("Couch2r GET supports either / for all or /{id} for retrieval " +
                     "of one instance. Multiple path variables are not supported.");
+        }
+    }
+
+    // TODO @peter docs
+    public ResponseEntity handlePost(final HttpServletRequest request,
+                                     final String[] additionalParts,
+                                     final ObjectMapper objectMapper) {
+
+        if ( additionalParts.length == 0 ) {
+            if ( request.getContentLengthLong() == 0 ) {
+                return ResponseEntity.badRequest().body("No body specified (content length = 0)");
+            }
+
+            try {
+                final String body = request.getReader().lines().collect(Collectors.joining("\n"));
+
+                try {
+                    final Object serializedData = objectMapper.readValue(body, entityType.getJavaType());
+
+                    // TODO @peter validate serializedData
+
+                    try {
+                        final Object savedEntity = repository.save(serializedData);
+                        return ResponseEntity.ok(savedEntity);
+
+                    } catch ( RuntimeException e ) {
+                        log.warn("Save attempt failed.\nBody:"+body, e);
+                        return ResponseEntity.badRequest().body("Error during save attempt. See logs for more information.");
+                    }
+
+                } catch ( JsonProcessingException e ) {
+                    // TODO @peter can we provide a better error message
+                    return ResponseEntity.badRequest().body("Serialization error: "+e.getMessage());
+                }
+            } catch ( IOException e ) {
+                log.error("Error while reading POST request's body", e);
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body("Error while reading request body. See logs for more information.");
+            }
+        } else {
+            return ResponseEntity.badRequest().body("Couch2r POST supports only data post to resource base path." +
+                    " Further path variables are not supported.");
         }
     }
 
