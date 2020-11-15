@@ -11,8 +11,6 @@ import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.annotation.MergedAnnotations;
-import org.springframework.data.jpa.repository.support.JpaEntityInformation;
-import org.springframework.data.jpa.repository.support.JpaEntityInformationSupport;
 import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Component;
@@ -21,9 +19,9 @@ import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
 import javax.persistence.metamodel.EntityType;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.ParameterizedType;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -200,13 +198,14 @@ public class Couch2rInitializer {
      * @return New mapping.
      */
     protected Couch2rMapping createMappingForRepository(final CrudRepository repo, final Couch2r annotation) {
+        final Class<?> entityClass = getEntityClassOfRepository(repo);
+
         final String path =
                 couch2rConfiguration.getCouch2rBasePath() + "/"
                         + getEntityNameByClass(getEntityClassOfRepository(repo));
 
-        return new Couch2rMapping(path, repo);
+        return new Couch2rMapping(path, repo, getEntityTypeByClass(entityClass));
     }
-
 
 
     /**
@@ -217,6 +216,10 @@ public class Couch2rInitializer {
 
         // TODO @peter check if repo for entity is already managed
         //  >> maybe add entity class to Coch2rMapping > this way we could iterate through existing mappings?
+        //  >> NOT that simple: 3 cases
+        //      >> a: Repo exists and is managed by Couch2r too
+        //      >> b: Repo exists and is not managed
+        //      >> c: Repo does not exist (already handled)
 
         couch2rEntities.forEach((et, anno) -> {
             couch2rHandlerMapping.registerMapping(
@@ -244,7 +247,7 @@ public class Couch2rInitializer {
                 couch2rConfiguration.getCouch2rBasePath() + "/"
                         + getEntityNameByClass(entityType.getJavaType());
 
-        return new Couch2rMapping(path, repository);
+        return new Couch2rMapping(path, repository, entityType);
     }
 
 
@@ -275,6 +278,22 @@ public class Couch2rInitializer {
 
         if ( rawName.length() > 1 ) sb.append(rawName.substring(1));
         return sb.toString();
+    }
+
+    /**
+     * Fetches metamodel of entity manager and tries to find entity type for given class.
+     * @param clazz Class to get entity type for.
+     * @return EntityType.
+     * @throws IllegalArgumentException if no EntityType found for given class.
+     */
+    protected EntityType getEntityTypeByClass(final Class<?> clazz) {
+        final Optional<EntityType<?>> entityType = entityManager.getMetamodel().getEntities().stream()
+                .filter(et -> et.getJavaType() == clazz)
+                .findAny();
+
+        if ( entityType.isEmpty() ) throw new IllegalArgumentException("No EntityType present for class "+clazz);
+
+        return entityType.get();
     }
 
 }

@@ -14,7 +14,7 @@ public class Note {
 
     @Id
     @GeneratedValue
-    private long id;
+    private int id;
 
     @Column(nullable = false)
     private String title;

@@ -1,0 +1,42 @@
+com/hedgehogsmind/springcouch2r/demo/entities/Address.java
+ com.hedgehogsmind.springcouch2r.demo.entities.Address
+ com.hedgehogsmind.springcouch2r.demo.entities.Address$AddressBuilder
+com/hedgehogsmind/springcouch2r/demo/entities/Note.java
+ com.hedgehogsmind.springcouch2r.demo.entities.Note
+ com.hedgehogsmind.springcouch2r.demo.entities.Note$NoteBuilder
+com/hedgehogsmind/springcouch2r/demo/SpringCouch2rApplication.java
+ com.hedgehogsmind.springcouch2r.demo.SpringCouch2rApplication
+com/hedgehogsmind/springcouch2r/demo/DummyInitializer.java
+ com.hedgehogsmind.springcouch2r.demo.DummyInitializer
+com/hedgehogsmind/springcouch2r/configuration/Couch2rConfiguration.java
+ com.hedgehogsmind.springcouch2r.configuration.Couch2rConfiguration
+com/hedgehogsmind/springcouch2r/demo/MyCouch2rConfiguration.java
+ com.hedgehogsmind.springcouch2r.demo.MyCouch2rConfiguration
+com/hedgehogsmind/springcouch2r/demo/repositories/AddressRepository.java
+ com.hedgehogsmind.springcouch2r.demo.repositories.AddressRepository
+com/hedgehogsmind/springcouch2r/configuration/ValidatedAndNormalizedCouch2rConfiguration.java
+ com.hedgehogsmind.springcouch2r.configuration.ValidatedAndNormalizedCouch2rConfiguration
+com/hedgehogsmind/springcouch2r/Couch2rHandler.java
+ com.hedgehogsmind.springcouch2r.Couch2rHandler
+com/hedgehogsmind/springcouch2r/demo/repositories/NoteRepository.java
+ com.hedgehogsmind.springcouch2r.demo.repositories.NoteRepository
+com/hedgehogsmind/springcouch2r/demo/controllers/NoteController.java
+ com.hedgehogsmind.springcouch2r.demo.controllers.NoteController
+com/hedgehogsmind/springcouch2r/util/Couch2rResponseUtil.java
+ com.hedgehogsmind.springcouch2r.util.Couch2rResponseUtil
+com/hedgehogsmind/springcouch2r/util/Couch2rPathUtil.java
+ com.hedgehogsmind.springcouch2r.util.Couch2rPathUtil
+com/hedgehogsmind/springcouch2r/annotations/Couch2r.java
+ com.hedgehogsmind.springcouch2r.annotations.Couch2r
+com/hedgehogsmind/springcouch2r/exceptions/Couch2rIdTypeParsingNotSupportedException.java
+ com.hedgehogsmind.springcouch2r.exceptions.Couch2rIdTypeParsingNotSupportedException
+com/hedgehogsmind/springcouch2r/exceptions/Couch2rIdValueNotParsableException.java
+ com.hedgehogsmind.springcouch2r.exceptions.Couch2rIdValueNotParsableException
+com/hedgehogsmind/springcouch2r/data/Couch2rMapping.java
+ com.hedgehogsmind.springcouch2r.data.Couch2rMapping
+com/hedgehogsmind/springcouch2r/beans/Couch2rHandlerAdapter.java
+ com.hedgehogsmind.springcouch2r.beans.Couch2rHandlerAdapter
+com/hedgehogsmind/springcouch2r/beans/Couch2rInitializer.java
+ com.hedgehogsmind.springcouch2r.beans.Couch2rInitializer
+com/hedgehogsmind/springcouch2r/beans/Couch2rHandlerMapping.java
+ com.hedgehogsmind.springcouch2r.beans.Couch2rHandlerMapping

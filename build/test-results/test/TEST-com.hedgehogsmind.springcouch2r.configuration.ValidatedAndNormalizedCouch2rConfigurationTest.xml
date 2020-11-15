@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.hedgehogsmind.springcouch2r.configuration.ValidatedAndNormalizedCouch2rConfigurationTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2020-11-15T14:33:02" hostname="Peters-Air.fritz.box" time="0.048">
+  <properties/>
+  <testcase name="testBasePathNormalization()" classname="com.hedgehogsmind.springcouch2r.configuration.ValidatedAndNormalizedCouch2rConfigurationTest" time="0.03"/>
+  <testcase name="testBasePathNull()" classname="com.hedgehogsmind.springcouch2r.configuration.ValidatedAndNormalizedCouch2rConfigurationTest" time="0.01"/>
+  <testcase name="testBasePathEmpty()" classname="com.hedgehogsmind.springcouch2r.configuration.ValidatedAndNormalizedCouch2rConfigurationTest" time="0.004"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

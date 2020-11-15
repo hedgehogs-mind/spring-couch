@@ -1,5 +1,7 @@
 package com.hedgehogsmind.springcouch2r.data;
 
+import com.hedgehogsmind.springcouch2r.exceptions.Couch2rIdTypeParsingNotSupportedException;
+import com.hedgehogsmind.springcouch2r.exceptions.Couch2rIdValueNotParsableException;
 import com.hedgehogsmind.springcouch2r.util.Couch2rPathUtil;
 import lombok.Getter;
 import org.springframework.data.repository.CrudRepository;
@@ -8,8 +10,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.web.util.UrlPathHelper;
 
+import javax.persistence.metamodel.EntityType;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Optional;
 
 /**
  * <p>
@@ -30,10 +34,13 @@ public class Couch2rMapping {
 
     private final CrudRepository repository;
 
+    private final EntityType entityType;
+
     // TODO @peter docs
-    public Couch2rMapping(String path, CrudRepository repository) {
+    public Couch2rMapping(String path, CrudRepository repository, EntityType entityType) {
         this.pathWithTrailingSlash = Couch2rPathUtil.normalizeWithTrailingSlash(path);
         this.repository = repository;
+        this.entityType = entityType;
     }
 
     // TODO @peter docs
@@ -67,16 +74,116 @@ public class Couch2rMapping {
         return new String[0];
     }
 
-    // TODO @peter docs
+    /**
+     * <p>
+     *     This handles GET requests. Depending on the additional parts, this method does:
+     *     <ul>
+     *         <li>0 additional parameters: fetch all entity instances and returns them (200 OK).</li>
+     *         <li>1 additional parameter: try to parse as ID and try to fetch entity instance (200 if found, 404 if not)</li>
+     *         <li>2+ additional parameters: 400 BadRequest</li>
+     *     </ul>
+     * </p>
+     *
+     * @param additionalParts Additional path parts after base path.
+     * @return Result as ResponseEntity.
+     */
     protected ResponseEntity handleGet(final String[] additionalParts) {
         if ( additionalParts.length == 0 ) {
+
             // Simple get all
-            return ResponseEntity.ok().body(
+            return ResponseEntity.ok(
                 repository.findAll()
             );
+
+        } else if ( additionalParts.length == 1 ) {
+
+            // Get one by id
+
+            try {
+                final Object parsedId = parseId(additionalParts[0]);
+
+                final Optional<Object> entityInstance = repository.findById(parsedId);
+                if ( entityInstance.isEmpty() ) return ResponseEntity.notFound().build();
+
+                return ResponseEntity.ok(entityInstance.get());
+
+            } catch ( Couch2rIdValueNotParsableException e ) {
+                return ResponseEntity.badRequest().body(e.getMessage());
+
+            } catch ( Couch2rIdTypeParsingNotSupportedException e ) {
+                final Class idClass = entityType.getIdType().getJavaType();
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body("ID parsing for type "+idClass.getSimpleName()+" not supported.");
+            }
+
         } else {
-            throw new UnsupportedOperationException();
+            return ResponseEntity.badRequest().body("Couch2r GET supports either / for all or /{id} for retrieval " +
+                    "of one instance. Multiple path variables are not supported.");
         }
+    }
+
+    /**
+     * Delegator method. Currently supports:
+     * <ul>
+     *     <li>{@link Long}</li>
+     *     <li>{@link Integer}</li>
+     *     <li>{@link String}</li>
+     * </ul>
+     *
+     * @param value Id value as string.
+     * @return ID as parsed object.
+     */
+    protected Object parseId(final String value) {
+        final Class idClass = entityType.getIdType().getJavaType();
+
+        if ( idClass == Long.class || idClass == long.class )
+            return parseLongId(value);
+
+        else if ( idClass == Integer.class || idClass == int.class )
+            return parseIntegerId(value);
+
+        else if ( idClass == String.class )
+            return parseStringId(value);
+
+        else
+            throw new Couch2rIdTypeParsingNotSupportedException();
+    }
+
+    /**
+     * Tries to parse value as Long. If not possible, a {@link Couch2rIdValueNotParsableException}
+     * will be thrown.
+     * @param value Value to be parsed.
+     * @return Value as Long.
+     */
+    protected Long parseLongId(final String value) {
+        try {
+            return Long.parseLong(value);
+        } catch ( NumberFormatException e ) {
+            throw new Couch2rIdValueNotParsableException("Id not a number", e);
+        }
+    }
+
+    /**
+     * Tries to parse value as Integer. If not possible, a {@link Couch2rIdValueNotParsableException}
+     * will be thrown.
+     * @param value Value to be parsed.
+     * @return Value as Integer.
+     */
+    protected Integer parseIntegerId(final String value) {
+        try {
+            return Integer.parseInt(value);
+        } catch ( NumberFormatException e ) {
+            throw new Couch2rIdValueNotParsableException("ID not a number", e);
+        }
+    }
+
+    /**
+     * Just returns value.
+     * @param value Value to be parsed.
+     * @return Value.
+     */
+    protected String parseStringId(final String value) {
+        return value;
     }
 
 
