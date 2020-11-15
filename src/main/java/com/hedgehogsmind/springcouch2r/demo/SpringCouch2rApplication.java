@@ -1,9 +1,9 @@
-package com.hedgehogsmind.springcouch2r;
+package com.hedgehogsmind.springcouch2r.demo;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = "com.hedgehogsmind.springcouch2r")
 public class SpringCouch2rApplication {
 
 	public static void main(String[] args) {
