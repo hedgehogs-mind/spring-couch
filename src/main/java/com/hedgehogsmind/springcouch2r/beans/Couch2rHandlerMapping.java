@@ -32,6 +32,7 @@ public class Couch2rHandlerMapping implements HandlerMapping, Ordered {
         );
 
         // TODO @peter insert default interceptors
+        //  > https://www.baeldung.com/spring-mvc-handlerinterceptor
         final Couch2rMapping mapping = getAndCache(path);
 
         if ( mapping == null ) return null; // next HandlerMapping
