@@ -17,19 +17,45 @@ public final class Couch2rAnnotationUtil {
     private Couch2rAnnotationUtil() {}
 
     /**
+     * Simple container for an annotation occurrence.
+     * @param <AT> Type of annotation.
+     */
+    public static class AnnotationOccurrence<AT extends Annotation> {
+
+        private final AT annotation;
+
+        private final Object source;
+
+        public AnnotationOccurrence(AT annotation, Object source) {
+            this.annotation = annotation;
+            this.source = source;
+        }
+
+        public AT getAnnotation() {
+            return annotation;
+        }
+
+        public Object getSource() {
+            return source;
+        }
+
+    }
+
+    /**
      * Fetches a single annotation.
      *
      * @param clazz Class where to search on.
      * @param annotationType Type of desired annotation.
-     * @param <T> Inferred annotation type.
-     * @return Annotation or null.
+     * @param <AT> Inferred annotation type.
+     * @return Annotation occurrence or null.
      */
-    public static <T extends Annotation> T getAnnotation(final Class clazz, final Class<T> annotationType) {
-        final MergedAnnotation<T> mergedAnnotation = MergedAnnotations.from(clazz, MergedAnnotations.SearchStrategy.TYPE_HIERARCHY)
+    public static <AT extends Annotation> AnnotationOccurrence<AT> getAnnotation(final Class clazz, final Class<AT> annotationType) {
+        final MergedAnnotation<AT> mergedAnnotation = MergedAnnotations.from(clazz, MergedAnnotations.SearchStrategy.TYPE_HIERARCHY)
                 .get(annotationType);
 
-        if ( mergedAnnotation.isPresent() ) return mergedAnnotation.synthesize();
-        return null;
+        if ( !mergedAnnotation.isPresent() ) return null;
+
+        return new AnnotationOccurrence<>(mergedAnnotation.synthesize(), mergedAnnotation.getSource());
     }
 
     /**
@@ -37,16 +63,33 @@ public final class Couch2rAnnotationUtil {
      * a {@link IllegalArgumentException}.
      * @param clazz Class to search on.
      * @param annotationType Type of desired annotation.
-     * @param <T> Inferred annotation type.
-     * @return Annotation.
+     * @param <AT> Inferred annotation type.
+     * @return Annotation occurrence.
      * @throws IllegalArgumentException if given clazz has no annotation of given type.
      */
-    public static <T extends Annotation> T getRequiredAnnotation(final Class clazz, final Class<T> annotationType) {
-        final T annotation = getAnnotation(clazz, annotationType);
-        if ( annotation == null )
+    public static <AT extends Annotation> AnnotationOccurrence<AT> getRequiredAnnotation(final Class clazz, final Class<AT> annotationType) {
+        final AnnotationOccurrence<AT> occurrence = getAnnotation(clazz, annotationType);
+
+        if ( occurrence == null )
             throw new IllegalArgumentException("Class "+clazz+" does not have annotation of type "+annotationType);
 
-        return annotation;
+        return occurrence;
+    }
+
+    /**
+     * Searches source class, where annotation has been defined.
+     * @param clazz Class to start search on.
+     * @param annotationType Type of annotation.
+     * @return Class which declares the annotation.
+     */
+    public static Class getDeclaringClassOfAnnotation(final Class clazz, final Class<? extends Annotation> annotationType) {
+        final Object source = MergedAnnotations.from(clazz, MergedAnnotations.SearchStrategy.TYPE_HIERARCHY)
+                .get(annotationType).getSource();
+
+        if ( !(source instanceof Class) )
+            throw new IllegalStateException("Annotation source is not a class");
+
+        return (Class) source;
     }
 
     /**

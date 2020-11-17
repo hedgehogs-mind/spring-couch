@@ -2,7 +2,6 @@ package com.hedgehogsmind.springcouch2r.util;
 
 import com.hedgehogsmind.springcouch2r.annotations.Couch2r;
 import com.hedgehogsmind.springcouch2r.annotations.Couch2rModifierAnnotation;
-import net.bytebuddy.implementation.bind.annotation.Super;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -92,9 +91,11 @@ public class Couch2rAnnotationUtilTest {
 
     @Test
     public void testGetAnnotationExisting() {
-        Assertions.assertNotNull(
-                Couch2rAnnotationUtil.getAnnotation(ChildDemoClass.class, Couch2r.class)
-        );
+        final Couch2rAnnotationUtil.AnnotationOccurrence<Couch2r> o =
+                Couch2rAnnotationUtil.getAnnotation(ChildDemoClass.class, Couch2r.class);
+
+        Assertions.assertNotNull(o);
+        Assertions.assertEquals(ChildDemoClass.class, o.getSource());
     }
 
     @Test
@@ -106,7 +107,11 @@ public class Couch2rAnnotationUtilTest {
 
     @Test
     public void testGetRequiredAnnotationExisting() {
-        Couch2rAnnotationUtil.getRequiredAnnotation(ChildDemoClass.class, Couch2r.class);
+        // Must not throw an exception, because annotation exists
+        final Couch2rAnnotationUtil.AnnotationOccurrence<Couch2r> o =
+            Couch2rAnnotationUtil.getRequiredAnnotation(ChildDemoClass.class, Couch2r.class);
+
+        Assertions.assertEquals(ChildDemoClass.class, o.getSource());
     }
 
     @Test

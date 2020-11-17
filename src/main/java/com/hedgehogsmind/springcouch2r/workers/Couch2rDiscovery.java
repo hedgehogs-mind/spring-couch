@@ -8,12 +8,12 @@ import com.hedgehogsmind.springcouch2r.util.Couch2rEntityUtil;
 import com.hedgehogsmind.springcouch2r.util.Couch2rRepositoryUtil;
 import com.hedgehogsmind.springcouch2r.workers.exceptions.Couch2rUnsupportedBeanTypeFound;
 import org.springframework.context.ApplicationContext;
-import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.repository.CrudRepository;
 
 import javax.persistence.EntityManager;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -33,9 +33,10 @@ public class Couch2rDiscovery {
         this.discoveredCrudRepositories = new HashSet<>();
         this.discoveredEntities = new HashSet<>();
 
-        discoverCouch2rBeans(applicationContext, entityManager);
+        // TODO @peter add repository class to discovered element
 
-        // TODO @peter discover entities
+        discoverCouch2rBeans(applicationContext, entityManager);
+        discoverCouch2rEntities(entityManager);
     }
 
     /**
@@ -109,10 +110,15 @@ public class Couch2rDiscovery {
             final CrudRepository crudRepository,
             final EntityManager entityManager
     ) {
-        final Class<?> entityClassOfRepository = Couch2rRepositoryUtil.getEntityClassOfRepositoryClass(crudRepository.getClass());
+        final Class<?> entityClassOfRepository =
+                Couch2rRepositoryUtil.getEntityClassOfRepositoryClass(crudRepository.getClass());
+
+        final Couch2rAnnotationUtil.AnnotationOccurrence<Couch2r> tagAnnotation =
+                Couch2rAnnotationUtil.getRequiredAnnotation(crudRepository.getClass(), Couch2r.class);
 
         return new Couch2rDiscoveredCrudRepository(
-                Couch2rAnnotationUtil.getRequiredAnnotation(crudRepository.getClass(), Couch2r.class),
+                tagAnnotation.getAnnotation(),
+                tagAnnotation.getSource(),
                 Couch2rAnnotationUtil.getAllCouch2rModifierAnnotations(crudRepository.getClass()),
                 entityClassOfRepository,
                 Couch2rEntityUtil.getRequiredEntityTypeByEntityClass(entityClassOfRepository, entityManager),
@@ -120,4 +126,44 @@ public class Couch2rDiscovery {
         );
     }
 
+    /**
+     * Fetches all entity types from EntityManager. For each: Checks if {@link Couch2r} is present.
+     * If so, a new {@link Couch2rDiscoveredEntity} instance is created and added to the set of
+     * discovered entities.
+     *
+     * @param entityManager EntityManager used to fetch all managed entities.
+     */
+    protected void discoverCouch2rEntities(
+            final EntityManager entityManager
+    ) {
+        entityManager.getMetamodel().getEntities().forEach(et -> {
+            final Optional<Couch2rAnnotationUtil.AnnotationOccurrence<Couch2r>> tagAnnotation =
+                    Optional.ofNullable(
+                            Couch2rAnnotationUtil.getAnnotation(
+                                    et.getJavaType(),
+                                    Couch2r.class
+                            )
+                    );
+
+            if ( tagAnnotation.isPresent() ) {
+                discoveredEntities.add(
+                        new Couch2rDiscoveredEntity(
+                                tagAnnotation.get().getAnnotation(),
+                                tagAnnotation.get().getSource(),
+                                Couch2rAnnotationUtil.getAllCouch2rModifierAnnotations(et.getJavaType()),
+                                et.getJavaType(),
+                                et
+                        )
+                );
+            }
+        });
+    }
+
+    public Set<Couch2rDiscoveredCrudRepository> getDiscoveredCrudRepositories() {
+        return discoveredCrudRepositories;
+    }
+
+    public Set<Couch2rDiscoveredEntity> getDiscoveredEntities() {
+        return discoveredEntities;
+    }
 }

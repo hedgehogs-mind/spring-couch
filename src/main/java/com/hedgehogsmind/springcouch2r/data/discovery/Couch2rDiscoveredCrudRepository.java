@@ -19,13 +19,14 @@ public class Couch2rDiscoveredCrudRepository extends Couch2rDiscoveredUnit {
     /**
      * Stores values.
      * @param tagAnnotation See super.
+     * @param tagAnnotationSource See super.
      * @param couch2rModifierAnnotations See super.
      * @param entityClass See super.
      * @param entityType See super.
      * @param crudRepository Discovered CrudRepository.
      */
-    public Couch2rDiscoveredCrudRepository(Couch2r tagAnnotation, List<Annotation> couch2rModifierAnnotations, Class<?> entityClass, EntityType entityType, CrudRepository crudRepository) {
-        super(tagAnnotation, couch2rModifierAnnotations, entityClass, entityType);
+    public Couch2rDiscoveredCrudRepository(Couch2r tagAnnotation, Object tagAnnotationSource, List<Annotation> couch2rModifierAnnotations, Class<?> entityClass, EntityType entityType, CrudRepository crudRepository) {
+        super(tagAnnotation, tagAnnotationSource, couch2rModifierAnnotations, entityClass, entityType);
         this.crudRepository = crudRepository;
     }
 

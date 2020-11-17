@@ -12,7 +12,8 @@ import java.util.List;
  */
 public class Couch2rDiscoveredEntity extends Couch2rDiscoveredUnit {
 
-    public Couch2rDiscoveredEntity(Couch2r tagAnnotation, List<Annotation> couch2rModifierAnnotations, Class<?> entityClass, EntityType entityType) {
-        super(tagAnnotation, couch2rModifierAnnotations, entityClass, entityType);
+    public Couch2rDiscoveredEntity(Couch2r tagAnnotation, Object tagAnnotationSource, List<Annotation> couch2rModifierAnnotations, Class<?> entityClass, EntityType entityType) {
+        super(tagAnnotation, tagAnnotationSource, couch2rModifierAnnotations, entityClass, entityType);
     }
+
 }

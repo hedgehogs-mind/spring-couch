@@ -18,6 +18,8 @@ public abstract class Couch2rDiscoveredUnit {
 
     private final Couch2r tagAnnotation;
 
+    private final Object tagAnnotationSource;
+
     private final List<Annotation> couch2rModifierAnnotations;
 
     private final Class<?> entityClass;
@@ -28,18 +30,14 @@ public abstract class Couch2rDiscoveredUnit {
      * Stores given values.
      *
      * @param tagAnnotation The annotation which lead the discovery to index this unit/element.
+     * @param tagAnnotationSource {@link MergedAnnotation#getSource()} of tagAnnotation.
      * @param couch2rModifierAnnotations All other annotations on source, which are annotated with {@link Couch2rModifierAnnotation}
      * @param entityClass Class of entity. Either discovered entity class itself or entity class a repository handles.
      * @param entityType JPA entity type of entity. May fetched through the entity manager.
      */
-
-    public Couch2rDiscoveredUnit(
-            Couch2r tagAnnotation,
-            List<Annotation> couch2rModifierAnnotations,
-            Class<?> entityClass,
-            EntityType entityType
-    ) {
+    public Couch2rDiscoveredUnit(Couch2r tagAnnotation, Object tagAnnotationSource, List<Annotation> couch2rModifierAnnotations, Class<?> entityClass, EntityType entityType) {
         this.tagAnnotation = tagAnnotation;
+        this.tagAnnotationSource = tagAnnotationSource;
         this.couch2rModifierAnnotations = couch2rModifierAnnotations;
         this.entityClass = entityClass;
         this.entityType = entityType;
@@ -52,6 +50,16 @@ public abstract class Couch2rDiscoveredUnit {
      */
     public Couch2r getTagAnnotation() {
         return tagAnnotation;
+    }
+
+    /**
+     * Represents the source of the tagAnnotation. For more details, see
+     * {@link MergedAnnotation#getSource()}.
+     *
+     * @return Source of tag annotation.
+     */
+    public Object getTagAnnotationSource() {
+        return tagAnnotationSource;
     }
 
     /**
@@ -89,6 +97,7 @@ public abstract class Couch2rDiscoveredUnit {
         if (o == null || getClass() != o.getClass()) return false;
         Couch2rDiscoveredUnit that = (Couch2rDiscoveredUnit) o;
         return Objects.equals(tagAnnotation, that.tagAnnotation) &&
+                Objects.equals(tagAnnotationSource, that.tagAnnotationSource) &&
                 Objects.equals(couch2rModifierAnnotations, that.couch2rModifierAnnotations) &&
                 Objects.equals(entityClass, that.entityClass) &&
                 Objects.equals(entityType, that.entityType);
@@ -96,13 +105,14 @@ public abstract class Couch2rDiscoveredUnit {
 
     @Override
     public int hashCode() {
-        return Objects.hash(tagAnnotation, couch2rModifierAnnotations, entityClass, entityType);
+        return Objects.hash(tagAnnotation, tagAnnotationSource, couch2rModifierAnnotations, entityClass, entityType);
     }
 
     @Override
     public String toString() {
         return "Couch2rDiscoveredUnit{" +
                 "tagAnnotation=" + tagAnnotation +
+                ", tagAnnotationSource=" + tagAnnotationSource +
                 ", couch2rModifierAnnotations=" + couch2rModifierAnnotations +
                 ", entityClass=" + entityClass +
                 ", entityType=" + entityType +
