@@ -1,9 +1,10 @@
-package com.hedgehogsmind.springcouch2r.data;
+package com.hedgehogsmind.springcouch2r.workers.mapping;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hedgehogsmind.springcouch2r.exceptions.Couch2rIdTypeParsingNotSupportedException;
-import com.hedgehogsmind.springcouch2r.exceptions.Couch2rIdValueNotParsableException;
+import com.hedgehogsmind.springcouch2r.data.discovery.Couch2rDiscoveredUnit;
+import com.hedgehogsmind.springcouch2r.workers.mapping.exceptions.Couch2rIdTypeParsingNotSupportedException;
+import com.hedgehogsmind.springcouch2r.workers.mapping.exceptions.Couch2rIdValueNotParsableException;
 import com.hedgehogsmind.springcouch2r.util.Couch2rPathUtil;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -34,15 +35,33 @@ import java.util.stream.Collectors;
 @Slf4j
 public class Couch2rMapping {
 
+    private final Couch2rDiscoveredUnit discoveredUnit;
+
     private final String pathWithTrailingSlash;
 
     private final CrudRepository repository;
 
     private final EntityType entityType;
 
-    // TODO @peter docs
-    public Couch2rMapping(String path, CrudRepository repository, EntityType entityType) {
-        this.pathWithTrailingSlash = Couch2rPathUtil.normalizeWithTrailingSlash(path);
+    /**
+     * Stores values and normalizes path to end with trailing slash.
+     * @param discoveredUnit Discovered unit covered by this mapping.
+     * @param pathWithTrailingSlash Path with trailing slash.
+     * @param repository Repository to fetch data from.
+     * @param entityType EntityType that is managed.
+     */
+    public Couch2rMapping(
+            Couch2rDiscoveredUnit discoveredUnit,
+            String pathWithTrailingSlash,
+            CrudRepository repository,
+            EntityType entityType
+    ) {
+        if ( !pathWithTrailingSlash.endsWith("/") )
+            throw new IllegalArgumentException("pathWithTrailingSlash does not end with trailing slash. Was: "
+                    +pathWithTrailingSlash);
+
+        this.discoveredUnit = discoveredUnit;
+        this.pathWithTrailingSlash = pathWithTrailingSlash;
         this.repository = repository;
         this.entityType = entityType;
     }

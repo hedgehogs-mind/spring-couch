@@ -1,4 +1,4 @@
-package com.hedgehogsmind.springcouch2r.workers;
+package com.hedgehogsmind.springcouch2r.workers.discovery;
 
 import com.hedgehogsmind.springcouch2r.annotations.Couch2r;
 import com.hedgehogsmind.springcouch2r.data.discovery.Couch2rDiscoveredCrudRepository;
@@ -6,7 +6,7 @@ import com.hedgehogsmind.springcouch2r.data.discovery.Couch2rDiscoveredEntity;
 import com.hedgehogsmind.springcouch2r.util.Couch2rAnnotationUtil;
 import com.hedgehogsmind.springcouch2r.util.Couch2rEntityUtil;
 import com.hedgehogsmind.springcouch2r.util.Couch2rRepositoryUtil;
-import com.hedgehogsmind.springcouch2r.workers.exceptions.Couch2rUnsupportedBeanTypeFound;
+import com.hedgehogsmind.springcouch2r.workers.discovery.exceptions.Couch2rUnsupportedBeanTypeFound;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.repository.CrudRepository;
 

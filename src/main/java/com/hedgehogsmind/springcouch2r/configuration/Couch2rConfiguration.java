@@ -8,8 +8,9 @@ public interface Couch2rConfiguration {
 
     /**
      * Shall return the base path under which the resources shall be made available.
+     * Must end with trailing slash.
      *
-     * @return Base path of resources published.
+     * @return Base path of resources published (with trailing slash).
      */
     String getCouch2rBasePath();
 

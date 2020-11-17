@@ -37,4 +37,20 @@ public final class Couch2rEntityUtil {
         return optionalEntityType.get();
     }
 
+    /**
+     * Takes {@link Class#getSimpleName()} and converts first letter to lower one.
+     *
+     * @param entityClass Class to create name for.
+     * @return Name starting with lower name.
+     */
+    public static String getEntityClassNameWithFirstLowerLetter(final Class<?> entityClass) {
+        final String rawName = entityClass.getSimpleName();
+        final StringBuilder sb = new StringBuilder()
+                .append(rawName.substring(0, 1).toLowerCase());
+
+        if ( rawName.length() > 1 ) sb.append(rawName.substring(1));
+
+        return sb.toString();
+    }
+
 }

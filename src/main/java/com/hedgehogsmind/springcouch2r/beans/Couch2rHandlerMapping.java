@@ -1,6 +1,6 @@
 package com.hedgehogsmind.springcouch2r.beans;
 
-import com.hedgehogsmind.springcouch2r.data.Couch2rMapping;
+import com.hedgehogsmind.springcouch2r.workers.mapping.Couch2rMapping;
 import com.hedgehogsmind.springcouch2r.util.Couch2rPathUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.Ordered;

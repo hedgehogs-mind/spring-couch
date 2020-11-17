@@ -1,4 +1,4 @@
-package com.hedgehogsmind.springcouch2r.workers.exceptions;
+package com.hedgehogsmind.springcouch2r.workers.discovery.exceptions;
 
 /**
  * Shall be thrown, whenever a bean is annotated with {@link com.hedgehogsmind.springcouch2r.annotations.Couch2r}

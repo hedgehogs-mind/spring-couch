@@ -1,4 +1,4 @@
-package com.hedgehogsmind.springcouch2r.exceptions;
+package com.hedgehogsmind.springcouch2r.workers.mapping.exceptions;
 
 /**
  * Shall be thrown whenever a String value can not be parsed as an entity's ID value.

@@ -1,29 +1,31 @@
 package com.hedgehogsmind.springcouch2r.beans;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hedgehogsmind.springcouch2r.annotations.Couch2r;
+import com.hedgehogsmind.springcouch2r.beans.exceptions.Couch2rEntityAlreadyManagedByRepository;
+import com.hedgehogsmind.springcouch2r.beans.exceptions.Couch2rNoConfigurationFoundException;
+import com.hedgehogsmind.springcouch2r.beans.exceptions.Couch2rNoUniqueConfigurationFoundException;
+import com.hedgehogsmind.springcouch2r.beans.exceptions.Couch2rResourcePathClashException;
 import com.hedgehogsmind.springcouch2r.configuration.Couch2rConfiguration;
 import com.hedgehogsmind.springcouch2r.configuration.ValidatedAndNormalizedCouch2rConfiguration;
-import com.hedgehogsmind.springcouch2r.data.Couch2rMapping;
-import lombok.RequiredArgsConstructor;
-import net.jodah.typetools.TypeResolver;
+import com.hedgehogsmind.springcouch2r.data.discovery.Couch2rDiscoveredCrudRepository;
+import com.hedgehogsmind.springcouch2r.data.discovery.Couch2rDiscoveredUnit;
+import com.hedgehogsmind.springcouch2r.util.Couch2rEntityUtil;
+import com.hedgehogsmind.springcouch2r.util.Couch2rPathUtil;
+import com.hedgehogsmind.springcouch2r.workers.discovery.Couch2rDiscovery;
+import com.hedgehogsmind.springcouch2r.workers.mapping.Couch2rMapping;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
-import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
-import javax.persistence.metamodel.EntityType;
-import java.lang.annotation.Annotation;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 
 @Component
-@RequiredArgsConstructor
 public class Couch2rCore {
 
     private final ApplicationContext applicationContext;
@@ -36,51 +38,55 @@ public class Couch2rCore {
 
     private Couch2rConfiguration couch2rConfiguration;
 
-    private Map<Object, Couch2r> couch2rBeans;
+    private Couch2rDiscovery couch2rDiscovery;
 
-    private Map<CrudRepository, Couch2r> couch2rRepositories;
+    private Set<Couch2rMapping> couch2rMappings;
 
-    private Map<EntityType, Couch2r> couch2rEntities;
+    /**
+     * Dependency injection constructor.
+     *
+     * @param applicationContext ApplicationContext. Used to find beans.
+     * @param entityManager EntityManager. Used to fetch managed entities.
+     * @param globalObjectMapper ObjectMapper globally configured (optional). Maybe used for JSON mapping.
+     */
+    public Couch2rCore(ApplicationContext applicationContext, EntityManager entityManager, Optional<ObjectMapper> globalObjectMapper) {
+        this.applicationContext = applicationContext;
+        this.entityManager = entityManager;
+        this.globalObjectMapper = globalObjectMapper;
+    }
 
-    private Set<Couch2rMapping> couch2rMappings = new HashSet<>();
-
+    /**
+     * <p>
+     *     First fetches {@link Couch2rConfiguration} and then applies settings via
+     *     {@link #applyCouch2rConfiguration()}.
+     * </p>
+     */
     @PostConstruct
     public void setup() {
         fetchCouch2rConfiguration();
         applyCouch2rConfiguration();
 
-        // Bean stuff
-        collectCouch2rBeans();
-        filterCouch2rRepositories();
-        validateNoBeansUnconsumed();
+        this.couch2rDiscovery = new Couch2rDiscovery(applicationContext, entityManager);
 
-        setupRepositories();
-
-        // Entity stuff
-        collectCouch2rEntities();
-        setupEntities();
-
-        // TODO @peter JpaEntityInformationSupport
-        // TODO @peter Retrieve global ObjectMapper Configuration?
-        // TODO @peter we prefer repos > if entity has already repository > dont create twice
-        //  > throw error or warning log
+        setupMappings();
     }
 
     /**
      * Searches a bean implementing {@link Couch2rConfiguration}, validates and normalizes it via
      * {@link ValidatedAndNormalizedCouch2rConfiguration}.
+     *
+     * @throws Couch2rNoUniqueConfigurationFoundException if no unique {@link Couch2rConfiguration} bean exists.
+     * @throws Couch2rNoConfigurationFoundException if no {@link Couch2rConfiguration} bean exists.
      */
     protected void fetchCouch2rConfiguration() {
         try {
             final Couch2rConfiguration bean = applicationContext.getBean(Couch2rConfiguration.class);
+            this.couch2rConfiguration = new ValidatedAndNormalizedCouch2rConfiguration(bean);
 
-            this.couch2rConfiguration = new ValidatedAndNormalizedCouch2rConfiguration(
-                    bean
-            );
         } catch ( NoUniqueBeanDefinitionException e ) {
-            throw new IllegalStateException("No unique Couch2rConfigurations found."); // TODO @peter own exception
+            throw new Couch2rNoUniqueConfigurationFoundException("No unique Couch2rConfigurations found.", e);
         } catch ( NoSuchBeanDefinitionException e ) {
-            throw new IllegalStateException("No Couch2rConfiguration found."); // TODO @peter own exception
+            throw new Couch2rNoConfigurationFoundException("No Couch2rConfiguration found.", e);
         }
     }
 
@@ -108,211 +114,130 @@ public class Couch2rCore {
     }
 
     /**
-     * Finds all beans that are annotated with {@link Couch2r} and puts them into the couch2rBeans map.
+     * Creates new mapping set and calls {@link #setupRepositoryMappings()} and
+     * {@link #setupEntityMappings()}.
      */
-    protected void collectCouch2rBeans() {
-        this.couch2rBeans = new HashMap<>();
-        final String[] beanNames = applicationContext.getBeanNamesForAnnotation(Couch2r.class);
+    protected void setupMappings() {
+        couch2rMappings = new HashSet<>();
 
-        for ( final String beanName : beanNames ) {
-            final Object bean = applicationContext.getBean(beanName);
-            final Couch2r annotation = AnnotationUtils.findAnnotation(bean.getClass(), Couch2r.class);
-
-            couch2rBeans.put(bean, annotation);
-        }
+        setupRepositoryMappings();
+        setupEntityMappings();
     }
 
     /**
-     * Searches all beans that are of type {@link CrudRepository} and adds them to the dedicated map.
+     * <p>
+     *      Creates new Couch2rMapping for each discovered repo. Resource path is constructed
+     *      by {@link #constructResourcePathAndAssertNoPathClash(Couch2rDiscoveredUnit)}.
+     *      Registers mapping at internal set.
+     * </p>
      */
-    protected void filterCouch2rRepositories() {
-        if ( this.couch2rBeans == null ) {
-            throw new IllegalStateException("couch2rBeans has not been initialized yet.");
-        }
+    protected void setupRepositoryMappings() {
+        couch2rDiscovery.getDiscoveredCrudRepositories().forEach(discoveredRepo -> {
+            final Couch2rMapping newRepositoryMapping = new Couch2rMapping(
+                    discoveredRepo,
+                    constructResourcePathAndAssertNoPathClash(discoveredRepo),
+                    discoveredRepo.getCrudRepository(),
+                    discoveredRepo.getEntityType()
+            );
 
-        this.couch2rRepositories = new HashMap<>();
-
-        for ( final Map.Entry<Object, Couch2r> beanMapping : this.couch2rBeans.entrySet() ) {
-            if ( beanMapping.getKey() instanceof CrudRepository ) {
-                this.couch2rRepositories.put((CrudRepository) beanMapping.getKey(), beanMapping.getValue());
-            }
-        }
-    }
-
-    /**
-     * Computes the beans that are not
-     * <ul>
-     *     <li>CrudRepository Beans</li>
-     * </ul>
-     *
-     * @return Map of remaining beans.
-     */
-    protected Map<Object, Couch2r> computeUnconsumedBeans() {
-        final Map<Object, Couch2r> unconsumedBeans = new HashMap<>(this.couch2rBeans);
-
-        this.couch2rRepositories.forEach((bean, ann) -> unconsumedBeans.remove(bean));
-
-        return unconsumedBeans;
-    }
-
-    /**
-     * Fetches unconsumed beans and throws errors containing declaration source of {@link Couch2r}.
-     */
-    protected void validateNoBeansUnconsumed() {
-        final Map<Object, Couch2r> unconsumedBean = computeUnconsumedBeans();
-
-        if ( !unconsumedBean.isEmpty() ) {
-            final Map.Entry<Object, Couch2r> any = unconsumedBean.entrySet().stream().findAny().get();
-
-            final Object source = getAnnotationSource(any.getKey(), Couch2r.class);
-
-            if ( source instanceof Class ) {
-                throw new IllegalStateException("@Couch2r not supported on: "+((Class)source).getName());
-            } else {
-                throw new IllegalStateException("@Couch2r not supported on: "+source);
-            }
-        }
-    }
-
-    /**
-     * Fetches all entity classes from entity manager and checks, if they are annotated with {@link Couch2r}.
-     * If so, they will be added to map of couch2r entities.
-     */
-    protected void collectCouch2rEntities() {
-        couch2rEntities = new HashMap<>();
-
-        entityManager.getMetamodel().getEntities().forEach(et -> {
-            final Class<?> entityClass = et.getJavaType();
-            final Couch2r couch2rAnnotation = AnnotationUtils.findAnnotation(entityClass, Couch2r.class);
-
-            if ( couch2rAnnotation != null ) {
-                this.couch2rEntities.put(et, couch2rAnnotation);
-            }
+            couch2rMappings.add(newRepositoryMapping);
         });
     }
 
     /**
-     * Finds declaring source of annotation type of given object.
-     * @param bean Bean.
-     * @param annotationType Annotation class.
-     * @return Source or null.
-     */
-    protected Object getAnnotationSource(final Object bean, final Class<? extends Annotation> annotationType) {
-        return MergedAnnotations.from(bean.getClass(), MergedAnnotations.SearchStrategy.TYPE_HIERARCHY_AND_ENCLOSING_CLASSES)
-                .get(annotationType).getSource();
-    }
-
-    /**
-     * For each found repository: Create {@link Couch2rMapping} and register it at the
-     * {@link Couch2rHandlerMapping};
-     */
-    protected void setupRepositories() {
-        if ( couch2rRepositories == null ) throw new IllegalStateException("No Couch2r repositories have been collected yet.");
-
-        couch2rRepositories.forEach((bean, anno) -> couch2rMappings.add(createMappingForRepository(bean, anno)) );
-    }
-
-    /**
-     * Creates path for repository using {@link Couch2rConfiguration#getCouch2rBasePath()} and
-     * {@link #getEntityNameByClass(Class)} (CrudRepository)} + {@link #getEntityClassOfRepository(CrudRepository)}.
+     * <p>
+     *     For each discovered entity: Checks that there is no repository which already handles
+     *     the entity type.
+     * </p>
      *
-     * @param repo Repository.
-     * @param annotation Couch2r annotation found on repo.
-     * @return New mapping.
+     * <p>
+     *     Then a new mapping is created. Resource path is constructed using
+     *     {@link #constructResourcePathAndAssertNoPathClash(Couch2rDiscoveredUnit)}.
+     *     Then mapping is registered at internal set.
+     * </p>
      */
-    protected Couch2rMapping createMappingForRepository(final CrudRepository repo, final Couch2r annotation) {
-        final Class<?> entityClass = getEntityClassOfRepository(repo);
+    protected void setupEntityMappings() {
+        couch2rDiscovery.getDiscoveredEntities().forEach(discoveredEntity -> {
 
-        final String path =
-                couch2rConfiguration.getCouch2rBasePath() + "/"
-                        + getEntityNameByClass(getEntityClassOfRepository(repo));
+            // First check if entity is already managed by a repo
+            final Optional<Couch2rDiscoveredCrudRepository> discoveredRepo =
+                    couch2rDiscovery.getDiscoveredCrudRepositories().stream()
+                        .filter(dr -> dr.getEntityClass() == discoveredEntity.getEntityClass())
+                        .findAny();
 
-        return new Couch2rMapping(path, repo, getEntityTypeByClass(entityClass));
+            if ( discoveredRepo.isPresent() ) {
+                throw new Couch2rEntityAlreadyManagedByRepository(
+                        "Entity '"+discoveredEntity.getEntityClass()+"' has been tagged with @Couch2r but is" +
+                                " already managed by a repository which is also tagged with @Couch2r.\n" +
+                                "Repository class: "+discoveredRepo.get().getTagAnnotationSource()+"\n" +
+                                "Remove the annotation on the repository or on the entity."
+                );
+            }
+
+            final Couch2rMapping newEntityMapping = new Couch2rMapping(
+                    discoveredEntity,
+                    constructResourcePathAndAssertNoPathClash(discoveredEntity),
+                    new SimpleJpaRepository(
+                            discoveredEntity.getEntityClass(),
+                            entityManager
+                    ),
+                    discoveredEntity.getEntityType()
+            );
+
+            couch2rMappings.add(newEntityMapping);
+        });
     }
 
-
     /**
-     * For each entity: Creates {@link Couch2rMapping} and registers that at {@link Couch2rHandlerMapping}.
-     */
-    protected void setupEntities() {
-        if ( couch2rEntities == null ) throw new IllegalStateException("No Couch2r entities have been selected yet.");
-
-        // TODO @peter check if repo for entity is already managed
-        //  >> maybe add entity class to Coch2rMapping > this way we could iterate through existing mappings?
-        //  >> NOT that simple: 3 cases
-        //      >> a: Repo exists and is managed by Couch2r too
-        //      >> b: Repo exists and is not managed
-        //      >> c: Repo does not exist (already handled)
-
-        couch2rEntities.forEach((et, anno) -> couch2rMappings.add(createMappingForEntity(et, anno)) );
-    }
-
-    /**
-     * Creates new {@link SimpleJpaRepository} and then creates
-     * a new {@link Couch2rMapping}. Path will be created using entity class name starting
-     * with lower letter.
+     * <p>
+     *     <ul>
+     *         <li>Computes resource name: Entity class name or name() of Couch2r annotation if not empty.</li>
+     *         <li>Compute path using {@link Couch2rConfiguration#getCouch2rBasePath()}</li>
+     *         <li>Check if there is already a mapping with the same path</li>
+     *         <li>Return path (with trailing slash)</li>
+     *     </ul>
+     * </p>
      *
-     * @param entityType EntityType of entity.
-     * @param couch2rAnnotation Annotation.
-     * @return New Couch2r mapping carrying new Repository instance.
+     * @param discoveredUnit Discovered unit to create resource path for (based on couch2r config).
+     * @return Resource path with trailing slash.
+     * @throws Couch2rResourcePathClashException if there is already a mapping with the same path.
      */
-    protected Couch2rMapping createMappingForEntity(final EntityType entityType, final Couch2r couch2rAnnotation) {
-        final SimpleJpaRepository repository = new SimpleJpaRepository(
-                entityType.getJavaType(),
-                entityManager
+    protected String constructResourcePathAndAssertNoPathClash(final Couch2rDiscoveredUnit discoveredUnit) {
+        final String resourceName = !discoveredUnit.getTagAnnotation().resourceName().isBlank() ?
+                discoveredUnit.getTagAnnotation().resourceName() :
+                Couch2rEntityUtil.getEntityClassNameWithFirstLowerLetter(discoveredUnit.getEntityClass());
+
+        final String path = Couch2rPathUtil.normalizeWithTrailingSlash(
+                couch2rConfiguration.getCouch2rBasePath() +
+                        resourceName
         );
 
-        final String path =
-                couch2rConfiguration.getCouch2rBasePath() + "/"
-                        + getEntityNameByClass(entityType.getJavaType());
+        final Optional<Couch2rMapping> existingMapping =
+                getMappingByPath(path);
 
-        return new Couch2rMapping(path, repository, entityType);
-    }
+        if ( existingMapping.isPresent() ) {
+            throw new Couch2rResourcePathClashException(
+                    "There is a path clash for entity '"+discoveredUnit.getEntityClass()+"'. The path '"+path+"' is already taken.\n" +
+                            "Existing mapping's source: "+existingMapping.get().getDiscoveredUnit().getTagAnnotationSource()+"\n" +
+                            "New (attempted) mapping's source: "+discoveredUnit.getTagAnnotationSource()+"\n" +
+                            "You may change the entity class name or specify different names in the Couch2r annotation using 'resourceName'."
+            );
+        }
 
-
-    /**
-     * Uses {@link TypeResolver} to fetch generic class type.
-     * @param repository Repository.
-     * @return Generic entity type of repository.
-     */
-    protected Class<?> getEntityClassOfRepository(final CrudRepository repository) {
-        final Class<?>[] typeArgs = TypeResolver.resolveRawArguments(
-                CrudRepository.class,
-                repository.getClass()
-        );
-
-        if ( typeArgs.length < 2 ) throw new IllegalStateException("Could not fetch generic types properly");
-        return typeArgs[0];
+        return path;
     }
 
     /**
-     * Takes {@link Class#getSimpleName()} and converts first letter to lower case.
-     * @param clazz Class of which entity name is wanted.
-     * @return Class's simple name starting with lower letter.
+     * Tries to find a Couch2rMapping by path.
+     * @param path Path to search for.
+     * @return Mapping or empty.
      */
-    protected String getEntityNameByClass(final Class<?> clazz) {
-        final String rawName = clazz.getSimpleName();
-        final StringBuilder sb = new StringBuilder()
-                .append(rawName.substring(0, 1).toLowerCase());
+    protected Optional<Couch2rMapping> getMappingByPath(final String path) {
+        if ( !path.endsWith("/") ) throw new IllegalArgumentException("path must end with trailing slash");
 
-        if ( rawName.length() > 1 ) sb.append(rawName.substring(1));
-        return sb.toString();
-    }
-
-    /**
-     * Fetches metamodel of entity manager and tries to find entity type for given class.
-     * @param clazz Class to get entity type for.
-     * @return EntityType.
-     * @throws IllegalArgumentException if no EntityType found for given class.
-     */
-    protected EntityType getEntityTypeByClass(final Class<?> clazz) {
-        final Optional<EntityType<?>> entityType = entityManager.getMetamodel().getEntities().stream()
-                .filter(et -> et.getJavaType() == clazz)
+        return couch2rMappings.stream()
+                .filter(m -> m.getPathWithTrailingSlash().equals(path))
                 .findAny();
-
-        if ( entityType.isEmpty() ) throw new IllegalArgumentException("No EntityType present for class "+clazz);
-
-        return entityType.get();
     }
 
     public ObjectMapper getCouch2rObjectMapper() {
@@ -325,5 +250,9 @@ public class Couch2rCore {
 
     public Set<Couch2rMapping> getCouch2rMappings() {
         return couch2rMappings;
+    }
+
+    public void setCouch2rMappings(Set<Couch2rMapping> couch2rMappings) {
+        this.couch2rMappings = couch2rMappings;
     }
 }

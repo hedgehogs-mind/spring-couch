@@ -11,7 +11,7 @@ public class MyCouch2rConfiguration implements Couch2rConfiguration {
 
     @Override
     public String getCouch2rBasePath() {
-        return "/api/couch2r";
+        return "/api/couch2r/";
     }
 
     @Override

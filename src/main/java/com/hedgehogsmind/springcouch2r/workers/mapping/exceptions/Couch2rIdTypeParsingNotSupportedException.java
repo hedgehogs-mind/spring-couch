@@ -1,4 +1,4 @@
-package com.hedgehogsmind.springcouch2r.exceptions;
+package com.hedgehogsmind.springcouch2r.workers.mapping.exceptions;
 
 /**
  * Shall be thrown if parsing an entity's id type is not supported.
