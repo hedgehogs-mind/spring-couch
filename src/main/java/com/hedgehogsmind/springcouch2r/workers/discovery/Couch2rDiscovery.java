@@ -6,7 +6,7 @@ import com.hedgehogsmind.springcouch2r.data.discovery.Couch2rDiscoveredEntity;
 import com.hedgehogsmind.springcouch2r.util.Couch2rAnnotationUtil;
 import com.hedgehogsmind.springcouch2r.util.Couch2rEntityUtil;
 import com.hedgehogsmind.springcouch2r.util.Couch2rRepositoryUtil;
-import com.hedgehogsmind.springcouch2r.workers.discovery.exceptions.Couch2rUnsupportedBeanTypeFound;
+import com.hedgehogsmind.springcouch2r.workers.discovery.exceptions.Couch2rUnsupportedBeanTypeTaggedException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.repository.CrudRepository;
 
@@ -69,12 +69,12 @@ public class Couch2rDiscovery {
      * </p>
      *
      * <p>
-     *     If a bean type is not supported, this method throws a {@link Couch2rUnsupportedBeanTypeFound}.
+     *     If a bean type is not supported, this method throws a {@link Couch2rUnsupportedBeanTypeTaggedException}.
      * </p>
      *
      * @param bean Bean to add as discovered unit.
      * @param entityManager EntityManager for {@link javax.persistence.metamodel.EntityType} retrieval.
-     * @throws Couch2rUnsupportedBeanTypeFound if bean is not supported.
+     * @throws Couch2rUnsupportedBeanTypeTaggedException if bean is not supported.
      */
     protected void addBean(
             final Object bean,
@@ -90,7 +90,7 @@ public class Couch2rDiscovery {
             );
 
         } else {
-            throw new Couch2rUnsupportedBeanTypeFound(
+            throw new Couch2rUnsupportedBeanTypeTaggedException(
                     "@Couch2r not supported for bean of type "+bean.getClass()
             );
         }

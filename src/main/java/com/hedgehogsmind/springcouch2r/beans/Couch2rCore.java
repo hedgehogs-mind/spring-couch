@@ -1,7 +1,7 @@
 package com.hedgehogsmind.springcouch2r.beans;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hedgehogsmind.springcouch2r.beans.exceptions.Couch2rEntityAlreadyManagedByRepository;
+import com.hedgehogsmind.springcouch2r.beans.exceptions.Couch2rEntityAlreadyManagedByRepositoryException;
 import com.hedgehogsmind.springcouch2r.beans.exceptions.Couch2rNoConfigurationFoundException;
 import com.hedgehogsmind.springcouch2r.beans.exceptions.Couch2rNoUniqueConfigurationFoundException;
 import com.hedgehogsmind.springcouch2r.beans.exceptions.Couch2rResourcePathClashException;
@@ -166,7 +166,7 @@ public class Couch2rCore {
                         .findAny();
 
             if ( discoveredRepo.isPresent() ) {
-                throw new Couch2rEntityAlreadyManagedByRepository(
+                throw new Couch2rEntityAlreadyManagedByRepositoryException(
                         "Entity '"+discoveredEntity.getEntityClass()+"' has been tagged with @Couch2r but is" +
                                 " already managed by a repository which is also tagged with @Couch2r.\n" +
                                 "Repository class: "+discoveredRepo.get().getTagAnnotationSource()+"\n" +

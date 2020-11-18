@@ -1,3 +1,4 @@
+
 First scan for Couch2r Repository Occurence
 - repo
 - entity class
@@ -9,6 +10,20 @@ Then for entites
 
 afterwards validate no overlapping
 
+# Docs
+
+Docs!
+
+# Import annotation
+```
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@Import(SchedulingConfiguration.class)
+@Documented
+public @interface EnableScheduling {
+
+}
+```
 
 # Mapping type and more metadata
 
@@ -68,3 +83,26 @@ Maybe also support for explicit method:
 Problems:
 
 - multiple Methods with same name
+
+# More
+
+- Spring ApplicationEvents
+- Own Eventlistener classes > with state before/after
+  - before
+  - afterInSameTransaction
+  - afterTransaction
+- Mapper
+  - Specify intermediate DTO classes
+- Security
+  - Config
+    - ALL_ALLOWED
+    - ALL_PROHIBITED
+      - Here a default SpringEL expr must be supplied
+  - overridden in entities/repos
+- Disabling single methods
+  - post
+  - get
+  - ...
+- Error handling with RFC7807 
+- hibernate validator usage
+  - output validation errors
