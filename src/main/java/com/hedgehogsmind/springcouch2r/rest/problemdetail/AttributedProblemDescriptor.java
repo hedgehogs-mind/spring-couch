@@ -1,5 +1,8 @@
 package com.hedgehogsmind.springcouch2r.rest.problemdetail;
 
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
+
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -75,6 +78,13 @@ public class AttributedProblemDescriptor implements ProblemDetailConvertible {
     @Override
     public ProblemDetail toProblemDetail(Locale locale, Throwable throwable) {
         return populateAttributes(problemDescriptor.toProblemDetail(locale, throwable));
+    }
+
+    @Override
+    public ResponseEntity<ProblemDetailConvertible> toResponseEntity() {
+        return ResponseEntity.status(problemDescriptor.getStatus())
+                .header(HttpHeaders.CONTENT_TYPE, ProblemDetail.MEDIA_TYPE.toString())
+                .body(this);
     }
 
     @Override

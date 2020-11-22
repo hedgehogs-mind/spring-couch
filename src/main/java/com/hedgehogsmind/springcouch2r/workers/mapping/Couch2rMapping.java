@@ -3,6 +3,7 @@ package com.hedgehogsmind.springcouch2r.workers.mapping;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hedgehogsmind.springcouch2r.data.discovery.Couch2rDiscoveredUnit;
+import com.hedgehogsmind.springcouch2r.rest.problemdetail.problems.Couch2rProblems;
 import com.hedgehogsmind.springcouch2r.workers.mapping.exceptions.Couch2rIdTypeParsingNotSupportedException;
 import com.hedgehogsmind.springcouch2r.workers.mapping.exceptions.Couch2rIdValueNotParsableException;
 import com.hedgehogsmind.springcouch2r.util.Couch2rPathUtil;
@@ -136,13 +137,14 @@ public class Couch2rMapping {
 
             } catch ( Couch2rIdTypeParsingNotSupportedException e ) {
                 final Class idClass = entityType.getIdType().getJavaType();
+
+                // TODO @peter replace by ProblemDetail
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                         .body("ID parsing for type "+idClass.getSimpleName()+" not supported.");
             }
 
         } else {
-            return ResponseEntity.badRequest().body("Couch2r GET supports either / for all or /{id} for retrieval " +
-                    "of one instance. Multiple path variables are not supported.");
+            return Couch2rProblems.TOO_MANY_PATH_VARIABLES.toResponseEntity();
         }
     }
 

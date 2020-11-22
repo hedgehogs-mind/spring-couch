@@ -1,6 +1,8 @@
 package com.hedgehogsmind.springcouch2r.rest.problemdetail;
 
 import org.hibernate.dialect.function.AbstractAnsiTrimEmulationFunction;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 
 import java.util.Locale;
 import java.util.Objects;
@@ -132,6 +134,12 @@ public final class ProblemDescriptor implements ProblemDetailConvertible {
                 throwable.getLocalizedMessage(),
                 status
         );
+    }
+
+    public ResponseEntity toResponseEntity() {
+        return ResponseEntity.status(status)
+                .header(HttpHeaders.CONTENT_TYPE, ProblemDetail.MEDIA_TYPE.toString())
+                .body(this);
     }
 
 }

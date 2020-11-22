@@ -1,5 +1,7 @@
 package com.hedgehogsmind.springcouch2r.workers.mapping;
 
+import com.hedgehogsmind.springcouch2r.rest.problemdetail.ProblemDescriptor;
+import com.hedgehogsmind.springcouch2r.rest.problemdetail.problems.Couch2rProblems;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +33,14 @@ public class Couch2rMappingTest extends MappingTestBase {
 
         Assertions.assertTrue(re.getBody() instanceof TestNote);
         Assertions.assertEquals(persistedTestNotes.get(0), re.getBody());
+    }
+
+    @Test
+    public void testGetTooManyPathVariables() {
+        final ResponseEntity re = perform("GET", "/1/2");
+
+        Assertions.assertTrue(re.getBody() instanceof ProblemDescriptor);
+        Assertions.assertEquals(Couch2rProblems.TOO_MANY_PATH_VARIABLES, re.getBody());
     }
 
 }

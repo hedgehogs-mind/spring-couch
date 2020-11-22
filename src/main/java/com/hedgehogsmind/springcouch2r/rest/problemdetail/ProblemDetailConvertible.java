@@ -1,5 +1,7 @@
 package com.hedgehogsmind.springcouch2r.rest.problemdetail;
 
+import org.springframework.http.ResponseEntity;
+
 import java.util.Locale;
 
 /**
@@ -24,5 +26,13 @@ public interface ProblemDetailConvertible {
      * @return Localized ProblemDetail instance from.
      */
     ProblemDetail toProblemDetail(final Locale locale, final Throwable throwable);
+
+    /**
+     * Implementation shall wrap itself as body and set the status as well as
+     * content type header of the ResponseEntity accordingly.
+     *
+     * @return ResponseEntity.
+     */
+    ResponseEntity<ProblemDetailConvertible> toResponseEntity();
 
 }

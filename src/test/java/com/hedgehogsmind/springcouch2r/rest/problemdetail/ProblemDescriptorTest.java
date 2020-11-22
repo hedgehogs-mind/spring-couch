@@ -3,6 +3,8 @@ package com.hedgehogsmind.springcouch2r.rest.problemdetail;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 
 import java.net.URI;
 import java.util.Locale;
@@ -52,6 +54,25 @@ public class ProblemDescriptorTest {
         Assertions.assertEquals("Couch2r en", detail.getTitle());
         Assertions.assertEquals("Couch2r en", detail.getDetail());
         Assertions.assertEquals(203, detail.getStatus());
+    }
+
+    @Test
+    public void testToResponseEntity() {
+        final ProblemDescriptor descriptor = new ProblemDescriptor(
+                "testType",
+                "test.test.test",
+                "test.test.test",
+                203
+        );
+
+        final ResponseEntity re = descriptor.toResponseEntity();
+
+        Assertions.assertEquals(descriptor, re.getBody());
+        Assertions.assertEquals(descriptor.getStatus(), re.getStatusCode().value());
+        Assertions.assertEquals(
+                ProblemDetail.MEDIA_TYPE.toString(),
+                re.getHeaders().get(HttpHeaders.CONTENT_TYPE).get(0)
+        );
     }
 
 }

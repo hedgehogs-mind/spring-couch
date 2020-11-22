@@ -11,4 +11,11 @@ public final class Couch2rProblems {
             500
     );
 
+    public static final ProblemDescriptor TOO_MANY_PATH_VARIABLES = new ProblemDescriptor(
+            "couch2r-too-many-path-variables",
+            "tooManyPathVariables.title",
+            "tooManyPathVariables.detail",
+            400
+    );
+
 }

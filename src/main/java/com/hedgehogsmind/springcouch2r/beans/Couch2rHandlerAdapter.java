@@ -42,6 +42,8 @@ public class Couch2rHandlerAdapter implements HandlerAdapter {
             ).toResponseEntity();
         }
 
+        // TODO @peter log ProblemDetails and ProblemDetailConvertibles
+
         Couch2rResponseUtil.writeResponseEntity(
                 responseEntityToSend,
                 request,

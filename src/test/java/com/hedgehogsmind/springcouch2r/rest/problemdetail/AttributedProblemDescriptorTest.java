@@ -2,6 +2,8 @@ package com.hedgehogsmind.springcouch2r.rest.problemdetail;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 
 import java.util.Locale;
 
@@ -64,6 +66,25 @@ public class AttributedProblemDescriptorTest {
         Assertions.assertTrue(detail.getFurtherAttributes().containsKey("key2"));
         Assertions.assertEquals("value1", detail.getFurtherAttributes().get("key1"));
         Assertions.assertEquals("value2", detail.getFurtherAttributes().get("key2"));
+    }
+
+    @Test
+    public void testToResponseEntity() {
+        final AttributedProblemDescriptor attributed = new ProblemDescriptor(
+                "testType",
+                "test.test.test",
+                "test.test.test",
+                203
+        ).withAttributes().addAttribute("k1", "v1").addAttribute("k2", "v2");
+
+        final ResponseEntity re = attributed.toResponseEntity();
+
+        Assertions.assertEquals(attributed, re.getBody());
+        Assertions.assertEquals(attributed.getProblemDescriptor().getStatus(), re.getStatusCode().value());
+        Assertions.assertEquals(
+                ProblemDetail.MEDIA_TYPE.toString(),
+                re.getHeaders().get(HttpHeaders.CONTENT_TYPE).get(0)
+        );
     }
 
 }
