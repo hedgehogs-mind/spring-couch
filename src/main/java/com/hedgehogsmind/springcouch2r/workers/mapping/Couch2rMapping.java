@@ -2,6 +2,7 @@ package com.hedgehogsmind.springcouch2r.workers.mapping;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hedgehogsmind.springcouch2r.annotations.Couch2r;
 import com.hedgehogsmind.springcouch2r.data.discovery.Couch2rDiscoveredUnit;
 import com.hedgehogsmind.springcouch2r.rest.problemdetail.problems.Couch2rProblems;
 import com.hedgehogsmind.springcouch2r.workers.mapping.exceptions.Couch2rIdTypeParsingNotSupportedException;
@@ -133,7 +134,7 @@ public class Couch2rMapping {
                 return ResponseEntity.ok(entityInstance.get());
 
             } catch ( Couch2rIdValueNotParsableException e ) {
-                return ResponseEntity.badRequest().body(e.getMessage());
+                return Couch2rProblems.WRONG_ID_TYPE.toResponseEntity();
 
             } catch ( Couch2rIdTypeParsingNotSupportedException e ) {
                 final Class idClass = entityType.getIdType().getJavaType();
@@ -177,6 +178,7 @@ public class Couch2rMapping {
 
                 } catch ( JsonProcessingException e ) {
                     // TODO @peter can we provide a better error message
+                    // TODO @peter ProblemDescriptor
                     return ResponseEntity.badRequest().body("Serialization error: "+e.getMessage());
                 }
             } catch ( IOException e ) {

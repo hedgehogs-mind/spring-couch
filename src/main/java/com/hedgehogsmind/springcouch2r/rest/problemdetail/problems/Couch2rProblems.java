@@ -18,4 +18,11 @@ public final class Couch2rProblems {
             400
     );
 
+    public static final ProblemDescriptor WRONG_ID_TYPE = new ProblemDescriptor(
+            "couch2r-wrong-id-type",
+            "wrongIdType.title",
+            "wrongIdType.detail",
+            400
+    );
+
 }

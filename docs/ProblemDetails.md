@@ -21,4 +21,5 @@ There may appear further informative attributes. This depends on the implementat
 |---|---|---|---|
 | couch2r-unknown-problem | 500 |  | Returned if an error which can not be classified or handled occurred. |
 | couch2r-too-many-path-variables | 400 |  | Returned if there are too many path variables (e.g. "/couch2r/entity/1 **/tooMuch/vars**") |
+| couch2r-wrong-id-type | 400 |  | Returned if the ID type does not match the resource ID's type.  |
 |  |  |  |  |

@@ -1,17 +1,14 @@
-- Error handling with RFC7807 
-  - __with parameters__
+- logging
+
+- IdTypeParsingNotSupportedException
+- ProblemDetailRuntimeException
+  - interface with ProblemDescriptor
+  - or ProblemDetail
+  - maybe just toDetail?
+  - multiple interfaces?
+    - ProblemDetailRuntimeException
+    - ...
    
-    
-First scan for Couch2r Repository Occurence
-- repo
-- entity class
-- annotation
-
-Then for entites
-- entity class
-- annotation
-
-afterwards validate no overlapping
 
 # Docs
 

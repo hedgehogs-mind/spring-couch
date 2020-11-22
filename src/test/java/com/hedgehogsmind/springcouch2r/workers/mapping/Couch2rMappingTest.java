@@ -43,4 +43,12 @@ public class Couch2rMappingTest extends MappingTestBase {
         Assertions.assertEquals(Couch2rProblems.TOO_MANY_PATH_VARIABLES, re.getBody());
     }
 
+    @Test
+    public void testGetWrongIdType() {
+        final ResponseEntity re = perform("GET", "/abc");
+
+        Assertions.assertTrue(re.getBody() instanceof ProblemDescriptor);
+        Assertions.assertEquals(Couch2rProblems.WRONG_ID_TYPE, re.getBody());
+    }
+
 }
