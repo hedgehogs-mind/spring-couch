@@ -55,7 +55,7 @@ public class ValidatedAndNormalizedCouch2rConfigurationTest {
         final Couch2rConfiguration config = new EmptyConfig() {
             @Override
             public String getCouch2rBasePath() {
-                return "///hello/world/////thisIsATest";
+                return "///hello/world/////thisIsATest/";
             }
         };
 
@@ -65,6 +65,22 @@ public class ValidatedAndNormalizedCouch2rConfigurationTest {
                 "/hello/world/thisIsATest/",
                 normalized.getCouch2rBasePath(),
                 "basePath normalization failed"
+        );
+    }
+
+    @Test
+    public void testFailOnBasePathWithoutTrailingSlash() {
+        final Couch2rConfiguration config = new EmptyConfig() {
+            @Override
+            public String getCouch2rBasePath() {
+                return "test/wo/trailingSlash";
+            }
+        };
+
+        Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> new ValidatedAndNormalizedCouch2rConfiguration(config),
+                "No trailing slash has been configured, expected IllegalArgumentException"
         );
     }
 

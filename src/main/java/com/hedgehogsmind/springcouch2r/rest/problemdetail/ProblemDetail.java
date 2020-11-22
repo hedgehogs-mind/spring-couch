@@ -1,18 +1,29 @@
 package com.hedgehogsmind.springcouch2r.rest.problemdetail;
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.MediaType;
 
 import java.net.URI;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Represents a RFC 7087 ProblemDetail.
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public final class ProblemDetail {
 
     public static final MediaType JSON_MEDIA_TYPE =
             MediaType.valueOf("application/problem+json");
+
+    public static final ObjectMapper SERIALIZER = new ObjectMapper();
+
+    public static final Set<String> FORBIDDEN_FURTHER_ATTRIBUTE_NAMES = Set.of(
+            "type", "title", "detail", "status", "instance"
+    );
 
     private URI type;
 
@@ -23,6 +34,8 @@ public final class ProblemDetail {
     private int status;
 
     private URI instance;
+
+    private final Map<String, Object> furtherAttributes = new HashMap<>();
 
     public ProblemDetail() {
     }
@@ -75,6 +88,38 @@ public final class ProblemDetail {
         this.instance = instance;
     }
 
+    @JsonAnyGetter
+    public Map<String, Object> getFurtherAttributes() {
+        return furtherAttributes;
+    }
+
+    /**
+     * Adds an attribute to the map of additional attributes.
+     * @param name Name of attribute.
+     * @param value Value. Serialized by Jackson.
+     */
+    @JsonAnySetter
+    public void addAttribute(final String name, final Object value) {
+        if ( FORBIDDEN_FURTHER_ATTRIBUTE_NAMES.contains(name) ) {
+            throw new IllegalArgumentException("'"+name+"' can not be used as key for further attributes.");
+        }
+
+        furtherAttributes.put(name, value);
+    }
+
+    /**
+     * Serializes this ProblemDetail instance as JSON using the static {@link #SERIALIZER}.
+     *
+     * @return JSON String.
+     */
+    public String serializeAsJson() {
+        try {
+            return SERIALIZER.writeValueAsString(this);
+        } catch ( JsonProcessingException e ) {
+            throw new RuntimeException("Error serializing ProblemDetail", e);
+        }
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -84,12 +129,25 @@ public final class ProblemDetail {
                 Objects.equals(type, that.type) &&
                 Objects.equals(title, that.title) &&
                 Objects.equals(detail, that.detail) &&
-                Objects.equals(instance, that.instance);
+                Objects.equals(instance, that.instance) &&
+                Objects.equals(furtherAttributes, that.furtherAttributes);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(type, title, detail, status, instance);
+        return Objects.hash(type, title, detail, status, instance, furtherAttributes);
+    }
+
+    @Override
+    public String toString() {
+        return "ProblemDetail{" +
+                "type=" + type +
+                ", title='" + title + '\'' +
+                ", detail='" + detail + '\'' +
+                ", status=" + status +
+                ", instance=" + instance +
+                ", furtherAttributes=" + furtherAttributes +
+                '}';
     }
 
     /**

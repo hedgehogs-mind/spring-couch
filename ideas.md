@@ -1,4 +1,7 @@
-
+- Error handling with RFC7807 
+  - __with parameters__
+   
+    
 First scan for Couch2r Repository Occurence
 - repo
 - entity class
@@ -103,6 +106,6 @@ Problems:
   - post
   - get
   - ...
-- Error handling with RFC7807 
+
 - hibernate validator usage
   - output validation errors
