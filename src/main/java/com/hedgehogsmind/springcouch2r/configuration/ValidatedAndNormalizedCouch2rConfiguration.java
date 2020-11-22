@@ -34,7 +34,7 @@ public class ValidatedAndNormalizedCouch2rConfiguration implements Couch2rConfig
         if ( basePath.isBlank() ) throw new IllegalArgumentException("Couch2r basePath must not be empty");
         if ( !basePath.endsWith("/") ) throw new IllegalArgumentException("Couch2r basePath must end with trailing slash");
 
-        return Couch2rPathUtil.normalizeWithTrailingSlash(basePath);
+        return Couch2rPathUtil.removeMultipleSlashes(basePath);
     }
 
     @Override
