@@ -1,4 +1,4 @@
-package com.hedgehogsmind.springcouch2r.beans.core3;
+package com.hedgehogsmind.springcouch2r.beans.core.core3;
 
 import com.hedgehogsmind.springcouch2r.beans.Couch2rCore;
 import com.hedgehogsmind.springcouch2r.beans.exceptions.Couch2rNoUniqueConfigurationFoundException;

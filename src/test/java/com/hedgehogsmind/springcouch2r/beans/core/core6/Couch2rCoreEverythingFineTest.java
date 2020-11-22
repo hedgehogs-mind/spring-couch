@@ -1,4 +1,4 @@
-package com.hedgehogsmind.springcouch2r.beans.core6;
+package com.hedgehogsmind.springcouch2r.beans.core.core6;
 
 import com.hedgehogsmind.springcouch2r.annotations.Couch2r;
 import com.hedgehogsmind.springcouch2r.beans.Couch2rCore;
