@@ -1,9 +1,10 @@
-package com.hedgehogsmind.springcouch2r.beans.t3;
+package com.hedgehogsmind.springcouch2r.beans.core5;
 
+import com.hedgehogsmind.springcouch2r.annotations.Couch2r;
 import com.hedgehogsmind.springcouch2r.beans.Couch2rCore;
-import com.hedgehogsmind.springcouch2r.beans.exceptions.Couch2rNoUniqueConfigurationFoundException;
 import com.hedgehogsmind.springcouch2r.configuration.Couch2rConfiguration;
 import com.hedgehogsmind.springcouch2r.configuration.DummyTestCouch2rConfiguration;
+import com.hedgehogsmind.springcouch2r.workers.discovery.exceptions.Couch2rUnsupportedBeanTypeTaggedException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,33 +12,28 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
 import javax.persistence.EntityManager;
 import java.util.Optional;
 
 @DataJpaTest
-public class Couch2rCoreNoUniqueConfigurationFoundTest {
-
-    public static class Couch2rTestConfig1 extends DummyTestCouch2rConfiguration {}
-
-    public static class Couch2rTestConfig2 extends DummyTestCouch2rConfiguration {}
+public class Couch2rCoreUnsupportedBeanTaggedTest {
 
     @SpringBootApplication(exclude = {Couch2rCore.class, Couch2rConfiguration.class})
-    @Configuration
     public static class Config {
-
         @Bean
-        public static Couch2rTestConfig1 testConfig1() {
-            return new Couch2rTestConfig1();
+        public DummyTestCouch2rConfiguration config() {
+            return new DummyTestCouch2rConfiguration();
         }
 
         @Bean
-        public static Couch2rTestConfig2 testConfig2() {
-            return new Couch2rTestConfig2();
+        public SomeService someService() {
+            return new SomeService();
         }
-
     }
+
+    @Couch2r
+    public static class SomeService {}
 
     @Autowired
     public ApplicationContext applicationContext;
@@ -46,16 +42,11 @@ public class Couch2rCoreNoUniqueConfigurationFoundTest {
     public EntityManager entityManager;
 
     @Test
-    public void testNoUniqueCouch2rConfigurationExceptionThrown() {
+    public void testExceptionThrownIfEntityAlreadyManagedByCouch2rRepo() {
         Assertions.assertThrows(
-                Couch2rNoUniqueConfigurationFoundException.class,
+                Couch2rUnsupportedBeanTypeTaggedException.class,
                 () -> {
-                    final Couch2rCore couch2rCore = new Couch2rCore(
-                            applicationContext,
-                            entityManager,
-                            Optional.empty()
-                    );
-
+                    final Couch2rCore couch2rCore = new Couch2rCore(applicationContext, entityManager, Optional.empty());
                     couch2rCore.setup();
                 }
         );

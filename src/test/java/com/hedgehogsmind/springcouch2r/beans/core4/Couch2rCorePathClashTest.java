@@ -1,8 +1,8 @@
-package com.hedgehogsmind.springcouch2r.beans.t1;
+package com.hedgehogsmind.springcouch2r.beans.core4;
 
 import com.hedgehogsmind.springcouch2r.annotations.Couch2r;
 import com.hedgehogsmind.springcouch2r.beans.Couch2rCore;
-import com.hedgehogsmind.springcouch2r.beans.exceptions.Couch2rEntityAlreadyManagedByRepositoryException;
+import com.hedgehogsmind.springcouch2r.beans.exceptions.Couch2rResourcePathClashException;
 import com.hedgehogsmind.springcouch2r.configuration.Couch2rConfiguration;
 import com.hedgehogsmind.springcouch2r.configuration.DummyTestCouch2rConfiguration;
 import org.junit.jupiter.api.Assertions;
@@ -12,8 +12,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
@@ -25,9 +23,9 @@ import javax.persistence.Id;
 import java.util.Optional;
 
 @DataJpaTest
-public class Couch2rCoreEntityAlsoMappedByRepoTest {
+public class Couch2rCorePathClashTest {
 
-    @SpringBootApplication(exclude = {Couch2rCore.class, Couch2rConfiguration.class}, scanBasePackageClasses = {})
+    @SpringBootApplication(exclude = {Couch2rCore.class, Couch2rConfiguration.class})
     @EnableJpaRepositories(considerNestedRepositories = true)
     public static class Config {
         @Bean
@@ -37,16 +35,20 @@ public class Couch2rCoreEntityAlsoMappedByRepoTest {
     }
 
     @Entity
-    @Couch2r
     public static class TestEntity1 {
-        @Id
-        @GeneratedValue
+        @Id @GeneratedValue
         public long id;
     }
 
     @Repository
-    @Couch2r
-    public interface Repo1 extends CrudRepository<TestEntity1, Long> {
+    @Couch2r(resourceName = "clashName")
+    public interface Repo1 extends CrudRepository<TestEntity1, Long> {}
+
+    @Entity
+    @Couch2r(resourceName = "clashName")
+    public static class TestEntity2 {
+        @Id @GeneratedValue
+        public long id;
     }
 
     @Autowired
@@ -56,13 +58,16 @@ public class Couch2rCoreEntityAlsoMappedByRepoTest {
     public EntityManager entityManager;
 
     @Test
-    public void testExceptionThrownIfEntityAlreadyManagedByCouch2rRepo() {
+    public void testExceptionOnPathClash() {
         Assertions.assertThrows(
-                Couch2rEntityAlreadyManagedByRepositoryException.class,
+                Couch2rResourcePathClashException.class,
                 () -> {
                     final Couch2rCore couch2rCore = new Couch2rCore(applicationContext, entityManager, Optional.empty());
                     couch2rCore.setup();
                 }
         );
     }
+
+
+
 }
