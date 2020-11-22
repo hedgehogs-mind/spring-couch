@@ -5,7 +5,9 @@ import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 
 import java.net.URI;
 import java.util.*;
@@ -121,6 +123,16 @@ public final class ProblemDetail {
         } catch ( JsonProcessingException e ) {
             throw new RuntimeException("Error serializing ProblemDetail", e);
         }
+    }
+
+    /**
+     * Convenience method. Creates ResponseEntity. Sets
+     * @return
+     */
+    public ResponseEntity<ProblemDetail> toResponseEntity() {
+        return ResponseEntity.status(status)
+                .header(HttpHeaders.CONTENT_TYPE, ProblemDetail.MEDIA_TYPE.toString())
+                .body(this);
     }
 
     @Override

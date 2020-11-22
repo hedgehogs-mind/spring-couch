@@ -67,9 +67,7 @@ public final class Couch2rResponseUtil {
             final ObjectMapper objectMapper
             ) {
 
-        final Locale locale = request.getLocales().hasMoreElements() ?
-                request.getLocale() :
-                Locale.ENGLISH;
+        final Locale locale = Couch2rRequestUtil.fetchLocale(request, Locale.ENGLISH);
 
         response.setStatus(responseEntity.getStatusCodeValue());
         responseEntity.getHeaders().forEach((name, value) -> {

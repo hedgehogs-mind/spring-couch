@@ -1,7 +1,3 @@
-# All Util classes
-
-Todo...
-
 # Couch2rMapping - We need to test the handle method
 
 Trivial.
@@ -20,3 +16,4 @@ We need to test
 We need to test
 - correct ResponseEntity conversion
 - correct Couch2rMapping call
+- runtime exception > unknown problem

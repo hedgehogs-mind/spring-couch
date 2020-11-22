@@ -1,5 +1,7 @@
 package com.hedgehogsmind.springcouch2r.beans;
 
+import com.hedgehogsmind.springcouch2r.rest.problemdetail.problems.Couch2rProblems;
+import com.hedgehogsmind.springcouch2r.util.Couch2rRequestUtil;
 import com.hedgehogsmind.springcouch2r.workers.mapping.Couch2rMapping;
 import com.hedgehogsmind.springcouch2r.util.Couch2rResponseUtil;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +12,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Locale;
 
 @Component
 @RequiredArgsConstructor
@@ -24,13 +27,23 @@ public class Couch2rHandlerAdapter implements HandlerAdapter {
 
     @Override
     public ModelAndView handle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        final ResponseEntity responseEntity = ((Couch2rMapping)handler).handle(
-                request,
-                couch2rCore.getCouch2rObjectMapper()
-        );
+
+        ResponseEntity responseEntityToSend = null;
+
+        try {
+            responseEntityToSend = ((Couch2rMapping)handler).handle(
+                    request,
+                    couch2rCore.getCouch2rObjectMapper()
+            );
+        } catch ( RuntimeException e ) {
+            responseEntityToSend = Couch2rProblems.UNKNOWN_PROBLEM.toProblemDetail(
+                    Couch2rRequestUtil.fetchLocale(request, Locale.ENGLISH),
+                    e
+            ).toResponseEntity();
+        }
 
         Couch2rResponseUtil.writeResponseEntity(
-                responseEntity,
+                responseEntityToSend,
                 request,
                 response,
                 couch2rCore.getCouch2rObjectMapper()
