@@ -205,7 +205,7 @@ public class Couch2rCore {
     protected String constructResourcePathAndAssertNoPathClash(final Couch2rDiscoveredUnit discoveredUnit) {
         final String resourceName = !discoveredUnit.getTagAnnotation().resourceName().isBlank() ?
                 discoveredUnit.getTagAnnotation().resourceName() :
-                Couch2rEntityUtil.getEntityClassNameWithFirstLowerLetter(discoveredUnit.getEntityClass());
+                Couch2rEntityUtil.getEntityClassNameSnakeCase(discoveredUnit.getEntityClass());
 
         final String path = Couch2rPathUtil.normalizeWithTrailingSlash(
                 couch2rConfiguration.getCouch2rBasePath() +

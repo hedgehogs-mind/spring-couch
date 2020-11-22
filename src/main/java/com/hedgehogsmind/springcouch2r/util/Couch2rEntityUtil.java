@@ -43,7 +43,7 @@ public final class Couch2rEntityUtil {
      * @param entityClass Class to create name for.
      * @return Name starting with lower name.
      */
-    public static String getEntityClassNameWithFirstLowerLetter(final Class<?> entityClass) {
+    public static String getEntityClassNameSnakeCase(final Class<?> entityClass) {
         final String rawName = entityClass.getSimpleName();
         final StringBuilder sb = new StringBuilder()
                 .append(rawName.substring(0, 1).toLowerCase());
