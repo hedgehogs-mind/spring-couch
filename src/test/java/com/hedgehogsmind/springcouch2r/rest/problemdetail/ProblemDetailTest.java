@@ -100,4 +100,12 @@ public class ProblemDetailTest {
         testAttributeNameForbidden("instance");
     }
 
+    @Test
+    public void checkMediaType() {
+        Assertions.assertEquals(
+                "application/problem+json",
+                ProblemDetail.MEDIA_TYPE.toString()
+        );
+    }
+
 }

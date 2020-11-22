@@ -2,21 +2,32 @@ package com.hedgehogsmind.springcouch2r.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hedgehogsmind.springcouch2r.rest.problemdetail.ProblemDescriptor;
+import com.hedgehogsmind.springcouch2r.rest.problemdetail.ProblemDetail;
+import com.hedgehogsmind.springcouch2r.rest.problemdetail.ProblemDetailConvertible;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 public final class Couch2rResponseUtil {
 
+    // TODO @peter docs
     public static void writeResponseEntity(
             final ResponseEntity responseEntity,
+            final HttpServletRequest request,
             final HttpServletResponse response,
             final ObjectMapper objectMapper
             ) {
+
+        final Locale locale = request.getLocales().hasMoreElements() ?
+                request.getLocale() :
+                Locale.ENGLISH;
 
         response.setStatus(responseEntity.getStatusCodeValue());
         responseEntity.getHeaders().forEach((name, value) -> {
@@ -34,6 +45,20 @@ public final class Couch2rResponseUtil {
 
                 bodyToWrite = String.valueOf(body);
                 response.setContentType(MediaType.TEXT_PLAIN_VALUE);
+
+            } else if ( body instanceof ProblemDetail || body instanceof ProblemDetailConvertible) {
+
+                ProblemDetail problemDetail = null;
+
+                if ( body instanceof ProblemDetailConvertible ) {
+                    problemDetail = ((ProblemDetailConvertible)body).toProblemDetail(locale);
+                } else {
+                    problemDetail = (ProblemDetail) body;
+                }
+
+                bodyToWrite = ((ProblemDetail) body).serializeAsJson();
+                response.setContentType(ProblemDetail.MEDIA_TYPE.toString());
+
             } else {
                 try {
                     bodyToWrite = objectMapper.writeValueAsString(body);

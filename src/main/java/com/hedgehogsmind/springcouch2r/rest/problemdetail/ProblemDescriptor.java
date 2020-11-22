@@ -1,5 +1,7 @@
 package com.hedgehogsmind.springcouch2r.rest.problemdetail;
 
+import org.hibernate.dialect.function.AbstractAnsiTrimEmulationFunction;
+
 import java.util.Locale;
 import java.util.Objects;
 import java.util.ResourceBundle;
@@ -7,7 +9,7 @@ import java.util.ResourceBundle;
 /**
  * Simple class to describe a problem using i18n keys.
  */
-public final class ProblemDescriptor {
+public final class ProblemDescriptor implements ProblemDetailConvertible {
 
     public static final String RESOURCE_BUNDLE_BASE_NAME = "springcouch2r/i18n/problem_detail";
 
@@ -47,6 +49,16 @@ public final class ProblemDescriptor {
 
     public int getStatus() {
         return status;
+    }
+
+    /**
+     * Convenience method. Calls {@link AttributedProblemDescriptor#AttributedProblemDescriptor(ProblemDescriptor)}
+     * with this.
+     *
+     * @return New AttributedProblemDescriptor instance carrying this as descriptor.
+     */
+    public AttributedProblemDescriptor withAttributes() {
+        return new AttributedProblemDescriptor(this);
     }
 
     @Override

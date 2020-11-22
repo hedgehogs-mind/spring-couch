@@ -31,6 +31,7 @@ public class Couch2rHandlerAdapter implements HandlerAdapter {
 
         Couch2rResponseUtil.writeResponseEntity(
                 responseEntity,
+                request,
                 response,
                 couch2rCore.getCouch2rObjectMapper()
         );

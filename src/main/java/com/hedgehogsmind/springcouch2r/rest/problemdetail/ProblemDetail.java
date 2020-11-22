@@ -16,7 +16,7 @@ import java.util.*;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public final class ProblemDetail {
 
-    public static final MediaType JSON_MEDIA_TYPE =
+    public static final MediaType MEDIA_TYPE =
             MediaType.valueOf("application/problem+json");
 
     public static final ObjectMapper SERIALIZER = new ObjectMapper();
@@ -97,14 +97,17 @@ public final class ProblemDetail {
      * Adds an attribute to the map of additional attributes.
      * @param name Name of attribute.
      * @param value Value. Serialized by Jackson.
+     * @return This for builder like usage.
      */
     @JsonAnySetter
-    public void addAttribute(final String name, final Object value) {
+    public ProblemDetail addAttribute(final String name, final Object value) {
         if ( FORBIDDEN_FURTHER_ATTRIBUTE_NAMES.contains(name) ) {
             throw new IllegalArgumentException("'"+name+"' can not be used as key for further attributes.");
         }
 
         furtherAttributes.put(name, value);
+
+        return this;
     }
 
     /**
