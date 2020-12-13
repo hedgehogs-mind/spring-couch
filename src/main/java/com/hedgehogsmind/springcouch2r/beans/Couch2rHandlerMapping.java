@@ -12,13 +12,15 @@ import org.springframework.web.util.UrlPathHelper;
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 
-@Component
-@RequiredArgsConstructor
 public class Couch2rHandlerMapping implements HandlerMapping, Ordered {
 
     private final Couch2rCore couch2rCore;
 
     private Map<String, Couch2rMapping> mappingCache = new HashMap<>();
+
+    public Couch2rHandlerMapping(Couch2rCore couch2rCore) {
+        this.couch2rCore = couch2rCore;
+    }
 
     @Override
     public int getOrder() {

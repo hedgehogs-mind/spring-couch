@@ -17,7 +17,6 @@ import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
-import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
@@ -25,7 +24,6 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-@Component
 public class Couch2rCore {
 
     private final ApplicationContext applicationContext;
@@ -84,9 +82,9 @@ public class Couch2rCore {
             this.couch2rConfiguration = new ValidatedAndNormalizedCouch2rConfiguration(bean);
 
         } catch ( NoUniqueBeanDefinitionException e ) {
-            throw new Couch2rNoUniqueConfigurationFoundException("No unique Couch2rConfigurations found.", e);
+            throw new Couch2rNoUniqueConfigurationFoundException("No unique Couch2rConfigurations found.");
         } catch ( NoSuchBeanDefinitionException e ) {
-            throw new Couch2rNoConfigurationFoundException("No Couch2rConfiguration found.", e);
+            throw new Couch2rNoConfigurationFoundException("No Couch2rConfiguration found.");
         }
     }
 
