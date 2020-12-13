@@ -1,12 +1,14 @@
 package com.hedgehogsmind.springcouch2r.workers.mapping;
 
-import com.hedgehogsmind.springcouch2r.rest.problemdetail.ProblemDescriptor;
+import com.hedgehogsmind.springcouch2r.rest.problemdetail.I18nProblemDetailDescriptor;
+import com.hedgehogsmind.springcouch2r.rest.problemdetail.ProblemDetailConvertible;
 import com.hedgehogsmind.springcouch2r.rest.problemdetail.problems.Couch2rProblems;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
+import java.util.Locale;
 
 public class Couch2rMappingTest extends MappingTestBase {
 
@@ -39,7 +41,7 @@ public class Couch2rMappingTest extends MappingTestBase {
     public void testGetTooManyPathVariables() {
         final ResponseEntity re = perform("GET", "/1/2");
 
-        Assertions.assertTrue(re.getBody() instanceof ProblemDescriptor);
+        Assertions.assertTrue(re.getBody() instanceof ProblemDetailConvertible);
         Assertions.assertEquals(Couch2rProblems.TOO_MANY_PATH_VARIABLES, re.getBody());
     }
 
@@ -47,8 +49,21 @@ public class Couch2rMappingTest extends MappingTestBase {
     public void testGetWrongIdType() {
         final ResponseEntity re = perform("GET", "/abc");
 
-        Assertions.assertTrue(re.getBody() instanceof ProblemDescriptor);
+        Assertions.assertTrue(re.getBody() instanceof ProblemDetailConvertible);
         Assertions.assertEquals(Couch2rProblems.WRONG_ID_TYPE, re.getBody());
     }
+
+    // TODO @peter todo
+    /*
+    @Test
+    public void testGetUnsupportedIdType() {
+        final ResponseEntity re = perform("GET", "/entityWithUnsupportedIdType/972136");
+
+        Assertions.assertTrue(re.getBody() instanceof ProblemDetailConvertible);
+        Assertions.assertEquals(Couch2rProblems.ID_TYPE_PARSING_NOT_SUPPORTED.getProblemType(),
+                ((ProblemDetailConvertible) re.getBody()).toProblemDetail(Locale.GERMAN).getType());
+    }
+    */
+
 
 }

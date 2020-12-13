@@ -2,7 +2,6 @@ package com.hedgehogsmind.springcouch2r.workers.mapping;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hedgehogsmind.springcouch2r.annotations.Couch2r;
 import com.hedgehogsmind.springcouch2r.data.discovery.Couch2rDiscoveredUnit;
 import com.hedgehogsmind.springcouch2r.rest.problemdetail.problems.Couch2rProblems;
 import com.hedgehogsmind.springcouch2r.workers.mapping.exceptions.Couch2rIdTypeParsingNotSupportedException;
@@ -137,11 +136,7 @@ public class Couch2rMapping {
                 return Couch2rProblems.WRONG_ID_TYPE.toResponseEntity();
 
             } catch ( Couch2rIdTypeParsingNotSupportedException e ) {
-                final Class idClass = entityType.getIdType().getJavaType();
-
-                // TODO @peter replace by ProblemDetail
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body("ID parsing for type "+idClass.getSimpleName()+" not supported.");
+                return e.toResponseEntity();
             }
 
         } else {
@@ -216,7 +211,7 @@ public class Couch2rMapping {
             return parseStringId(value);
 
         else
-            throw new Couch2rIdTypeParsingNotSupportedException();
+            throw new Couch2rIdTypeParsingNotSupportedException(idClass);
     }
 
     /**

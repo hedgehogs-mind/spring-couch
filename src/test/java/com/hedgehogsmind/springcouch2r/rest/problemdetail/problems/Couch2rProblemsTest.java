@@ -1,11 +1,12 @@
 package com.hedgehogsmind.springcouch2r.rest.problemdetail.problems;
 
-import com.hedgehogsmind.springcouch2r.rest.problemdetail.ProblemDescriptor;
+import com.hedgehogsmind.springcouch2r.rest.problemdetail.I18nProblemDetailDescriptor;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.net.URI;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -74,17 +75,17 @@ public class Couch2rProblemsTest {
     }
 
     @Test
-    public void testOnlyProblemDescriptors() {
+    public void testOnlyI18nProblemDetailDescriptors() {
         final Field[] fields = CLAZZ.getDeclaredFields();
 
-        final Set<Field> nonProblemDescriptorFields =
+        final Set<Field> nonI18nProblemDetailDescriptorFields =
                 Arrays.stream(fields)
-                .filter(f -> f.getType() != ProblemDescriptor.class)
+                .filter(f -> f.getType() != I18nProblemDetailDescriptor.class)
                 .collect(Collectors.toSet());
 
-        if ( !nonProblemDescriptorFields.isEmpty() ) {
-            final StringBuilder sb = new StringBuilder().append("Couch2rProblems contains non ProblemDescriptor fields:");
-            nonProblemDescriptorFields.forEach(f -> sb.append("\n\t> ").append(f.getName()));
+        if ( !nonI18nProblemDetailDescriptorFields.isEmpty() ) {
+            final StringBuilder sb = new StringBuilder().append("Couch2rProblems contains non I18nProblemDetailDescriptor fields:");
+            nonI18nProblemDetailDescriptorFields.forEach(f -> sb.append("\n\t> ").append(f.getName()));
 
             Assertions.fail(sb.toString());
         }
@@ -96,14 +97,14 @@ public class Couch2rProblemsTest {
 
         for ( final Locale locale : REQUIRED_LOCALES ) {
             try {
-                ResourceBundle.getBundle(ProblemDescriptor.RESOURCE_BUNDLE_BASE_NAME, locale, NO_FALLBACK_RESOURCE_CONTROL);
+                ResourceBundle.getBundle(I18nProblemDetailDescriptor.RESOURCE_BUNDLE_BASE_NAME, locale, NO_FALLBACK_RESOURCE_CONTROL);
             } catch ( MissingResourceException e ) {
                 missingLocales.add(locale);
             }
         }
 
         if ( !missingLocales.isEmpty() ) {
-            Assertions.fail("Missing locales for resource bundle '"+ProblemDescriptor.RESOURCE_BUNDLE_BASE_NAME+"': " +
+            Assertions.fail("Missing locales for resource bundle '"+ I18nProblemDetailDescriptor.RESOURCE_BUNDLE_BASE_NAME+"': " +
                     missingLocales.stream().map(Locale::toString).collect(Collectors.joining(", ")));
         }
     }
@@ -111,19 +112,19 @@ public class Couch2rProblemsTest {
     @Test
     public void testNoDuplicatedTypes() {
         final Field[] allFields = CLAZZ.getDeclaredFields();
-        final Set<String> allTypes = new HashSet<>();
-        final Set<String> duplicatedTypes = new HashSet<>();
+        final Set<URI> allTypes = new HashSet<>();
+        final Set<URI> duplicatedTypes = new HashSet<>();
 
         Arrays.stream(allFields)
-                .filter(f -> f.getType() == ProblemDescriptor.class)
+                .filter(f -> f.getType() == I18nProblemDetailDescriptor.class)
                 .map(f -> {
                     try {
-                        return (ProblemDescriptor) f.get(null);
+                        return (I18nProblemDetailDescriptor) f.get(null);
                     } catch ( Throwable t ) {
                         throw new RuntimeException(t); // if thrown here, probably not public static!
                     }
                 })
-                .map(d -> d.getProblemType())
+                .map(d -> d.getType())
                 .forEach(problemType -> {
                     if ( allTypes.contains(problemType) ) {
                         duplicatedTypes.add(problemType);
@@ -134,7 +135,9 @@ public class Couch2rProblemsTest {
 
         if ( !duplicatedTypes.isEmpty() ) {
             Assertions.fail("Found duplicated problem types:"+
-                    duplicatedTypes.stream().collect(Collectors.joining("\n\t> ", "\n\t> ", "")));
+                    duplicatedTypes.stream()
+                            .map(uri -> uri.toString())
+                            .collect(Collectors.joining("\n\t> ", "\n\t> ", "")));
         }
     }
 
@@ -148,12 +151,12 @@ public class Couch2rProblemsTest {
         boolean foundMissingKey = false;
 
         Arrays.stream(allFields)
-                .filter(f -> f.getType() == ProblemDescriptor.class)
+                .filter(f -> f.getType() == I18nProblemDetailDescriptor.class)
                 .forEach(f -> {
                     try {
-                        final ProblemDescriptor descriptor = (ProblemDescriptor) f.get(null);
+                        final I18nProblemDetailDescriptor descriptor = (I18nProblemDetailDescriptor) f.get(null);
                         allKeys.add(descriptor.getTitleKey());
-                        allKeys.add(descriptor.getMessageKey());
+                        allKeys.add(descriptor.getDetailKey());
 
                     } catch ( Throwable t ) {
                         throw new RuntimeException(t); // if thrown here, probably not public static!
@@ -164,7 +167,7 @@ public class Couch2rProblemsTest {
             final List<String> missingKeys = new ArrayList<>();
             missingLocaleKeys.put(locale, missingKeys);
 
-            final ResourceBundle rb = ResourceBundle.getBundle(ProblemDescriptor.RESOURCE_BUNDLE_BASE_NAME, locale, NO_FALLBACK_RESOURCE_CONTROL);
+            final ResourceBundle rb = ResourceBundle.getBundle(I18nProblemDetailDescriptor.RESOURCE_BUNDLE_BASE_NAME, locale, NO_FALLBACK_RESOURCE_CONTROL);
 
             for ( final String key : allKeys ) {
                 try {

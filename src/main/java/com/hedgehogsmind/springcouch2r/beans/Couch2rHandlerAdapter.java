@@ -1,5 +1,6 @@
 package com.hedgehogsmind.springcouch2r.beans;
 
+import com.hedgehogsmind.springcouch2r.rest.problemdetail.ProblemDetailConvertibleRuntimeException;
 import com.hedgehogsmind.springcouch2r.rest.problemdetail.problems.Couch2rProblems;
 import com.hedgehogsmind.springcouch2r.util.Couch2rRequestUtil;
 import com.hedgehogsmind.springcouch2r.workers.mapping.Couch2rMapping;
@@ -31,14 +32,18 @@ public class Couch2rHandlerAdapter implements HandlerAdapter {
         ResponseEntity responseEntityToSend = null;
 
         try {
-            responseEntityToSend = ((Couch2rMapping)handler).handle(
+            responseEntityToSend = ((Couch2rMapping) handler).handle(
                     request,
                     couch2rCore.getCouch2rObjectMapper()
             );
+        } catch ( ProblemDetailConvertibleRuntimeException e ) {
+            responseEntityToSend = e.toProblemDetail(
+                    Couch2rRequestUtil.fetchLocale(request, Locale.ENGLISH)
+            ).toResponseEntity();
+
         } catch ( RuntimeException e ) {
             responseEntityToSend = Couch2rProblems.UNKNOWN_PROBLEM.toProblemDetail(
-                    Couch2rRequestUtil.fetchLocale(request, Locale.ENGLISH),
-                    e
+                    Couch2rRequestUtil.fetchLocale(request, Locale.ENGLISH)
             ).toResponseEntity();
         }
 

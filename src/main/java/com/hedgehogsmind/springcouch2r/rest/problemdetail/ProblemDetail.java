@@ -1,200 +1,95 @@
 package com.hedgehogsmind.springcouch2r.rest.problemdetail;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.http.HttpHeaders;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.hedgehogsmind.springcouch2r.rest.ResponseEntityConvertible;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 import java.net.URI;
-import java.util.*;
+import java.util.Map;
 
 /**
- * Represents a RFC 7087 ProblemDetail.
+ * This interface defines a contract for data a problem detail implementation must deliver.
+ * This refers to RFC 7807.
  */
+@JsonSerialize(as = ProblemDetail.class)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public final class ProblemDetail {
+public interface ProblemDetail extends ResponseEntityConvertible<ProblemDetail> {
 
-    public static final MediaType MEDIA_TYPE =
-            MediaType.valueOf("application/problem+json");
+    MediaType CONTENT_TYPE = MediaType.parseMediaType("application/problem+json");
 
-    public static final ObjectMapper SERIALIZER = new ObjectMapper();
+    ObjectMapper PROBLEM_DETAIL_MAPPER = new ObjectMapper();
 
-    public static final Set<String> FORBIDDEN_FURTHER_ATTRIBUTE_NAMES = Set.of(
-            "type", "title", "detail", "status", "instance"
-    );
+    /**
+     * Returns the problem type. May refer to a documentation web page or represents
+     * a problem type using a URN like "urn:problem-type:...".
+     *
+     * @return Returns problem type as URI.
+     */
+    URI getType();
 
-    private URI type;
+    /**
+     * Title of the problem.
+     *
+     * @return Problem title.
+     */
+    String getTitle();
 
-    private String title;
+    /**
+     * Delivers a more in depth explanation of the title.
+     *
+     * @return In depth explanation.
+     */
+    String getDetail();
 
-    private String detail;
+    /**
+     * Represents the HTTP status.
+     *
+     * @return HTTP status.
+     */
+    int getStatus();
 
-    private int status;
+    /**
+     * Represents the semantic problem instance using a URI. May be a URN with a UUID like
+     * "urn:uuid:..." or anything else. It is useful to find the problem in logs or error
+     * databases.
+     *
+     * @return Problem instance.
+     */
+    URI getInstance();
 
-    private URI instance;
-
-    private final Map<String, Object> furtherAttributes = new HashMap<>();
-
-    public ProblemDetail() {
-    }
-
-    public ProblemDetail(URI type, String title, String detail, int status, URI instance) {
-        this.type = type;
-        this.title = title;
-        this.detail = detail;
-        this.status = status;
-        this.instance = instance;
-    }
-
-    public URI getType() {
-        return type;
-    }
-
-    public void setType(URI type) {
-        this.type = type;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getDetail() {
-        return detail;
-    }
-
-    public void setDetail(String detail) {
-        this.detail = detail;
-    }
-
-    public int getStatus() {
-        return status;
-    }
-
-    public void setStatus(int status) {
-        this.status = status;
-    }
-
-    public URI getInstance() {
-        return instance;
-    }
-
-    public void setInstance(URI instance) {
-        this.instance = instance;
-    }
-
+    /**
+     * Optional data to be embedded in the response.
+     *
+     * @return Some additional data. Can be null.
+     */
     @JsonAnyGetter
-    public Map<String, Object> getFurtherAttributes() {
-        return furtherAttributes;
-    }
+    Map<String, Object> getData();
 
     /**
-     * Adds an attribute to the map of additional attributes.
-     * @param name Name of attribute.
-     * @param value Value. Serialized by Jackson.
-     * @return This for builder like usage.
-     */
-    @JsonAnySetter
-    public ProblemDetail addAttribute(final String name, final Object value) {
-        if ( FORBIDDEN_FURTHER_ATTRIBUTE_NAMES.contains(name) ) {
-            throw new IllegalArgumentException("'"+name+"' can not be used as key for further attributes.");
-        }
-
-        furtherAttributes.put(name, value);
-
-        return this;
-    }
-
-    /**
-     * Serializes this ProblemDetail instance as JSON using the static {@link #SERIALIZER}.
+     * Uses {@link #PROBLEM_DETAIL_MAPPER} to serialize this problem detail instance as JSON.
      *
-     * @return JSON String.
+     * @return JSON.
      */
-    public String serializeAsJson() {
+    default String toJson() {
         try {
-            return SERIALIZER.writeValueAsString(this);
+            return PROBLEM_DETAIL_MAPPER.writeValueAsString(this);
         } catch ( JsonProcessingException e ) {
-            throw new RuntimeException("Error serializing ProblemDetail", e);
+            throw new RuntimeException("Could not serialize ProblemDetail as JSON");
         }
     }
 
     /**
-     * Convenience method. Creates ResponseEntity. Sets
-     * @return
-     */
-    public ResponseEntity<ProblemDetail> toResponseEntity() {
-        return ResponseEntity.status(status)
-                .header(HttpHeaders.CONTENT_TYPE, ProblemDetail.MEDIA_TYPE.toString())
-                .body(this);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        ProblemDetail that = (ProblemDetail) o;
-        return status == that.status &&
-                Objects.equals(type, that.type) &&
-                Objects.equals(title, that.title) &&
-                Objects.equals(detail, that.detail) &&
-                Objects.equals(instance, that.instance) &&
-                Objects.equals(furtherAttributes, that.furtherAttributes);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(type, title, detail, status, instance, furtherAttributes);
-    }
-
-    @Override
-    public String toString() {
-        return "ProblemDetail{" +
-                "type=" + type +
-                ", title='" + title + '\'' +
-                ", detail='" + detail + '\'' +
-                ", status=" + status +
-                ", instance=" + instance +
-                ", furtherAttributes=" + furtherAttributes +
-                '}';
-    }
-
-    /**
-     * <p>
-     *     Creates a new ProblemDetail. Problem type is converted into a URI
-     *     by prepending the prefix 'urn:problem-type'.
-     * </p>
+     * Creates new ResponseEntity by setting status to {@link #getStatus()} and the body to this.
      *
-     * <p>
-     *     The instance field is set to a URN of a random UUID. So for
-     *     example 'urn:uuid:907sad97...'.
-     * </p>
-     *
-     * @param problemType Problem type name/identifier.
-     * @param title Title.
-     * @param detail Detail.
-     * @param status Status code.
-     * @return New ProblemDetail instance.
+     * @return ResponseEntity carrying this ProblemDetail.
      */
-    public static ProblemDetail byUrn(
-            final String problemType,
-            final String title,
-            final String detail,
-            final int status
-    ) {
-        return new ProblemDetail(
-                URI.create("urn:problem-type:"+problemType),
-                title,
-                detail,
-                status,
-                URI.create("urn:uuid:"+ UUID.randomUUID())
-        );
+    @Override
+    default ResponseEntity<ProblemDetail> toResponseEntity() {
+        return ResponseEntity.status(getStatus()).body(this);
     }
-
 }

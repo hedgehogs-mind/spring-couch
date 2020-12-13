@@ -2,9 +2,10 @@ package com.hedgehogsmind.springcouch2r.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hedgehogsmind.springcouch2r.rest.problemdetail.AttributedProblemDescriptor;
-import com.hedgehogsmind.springcouch2r.rest.problemdetail.ProblemDescriptor;
+import com.hedgehogsmind.springcouch2r.rest.problemdetail.AttributedI18nProblemDetailDescriptor;
+import com.hedgehogsmind.springcouch2r.rest.problemdetail.I18nProblemDetailDescriptor;
 import com.hedgehogsmind.springcouch2r.rest.problemdetail.ProblemDetail;
+import com.hedgehogsmind.springcouch2r.rest.problemdetail.ProblemDetailDto;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -14,13 +15,19 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 
 import static org.mockito.Mockito.*;
 
 public class Couch2rResponseUtilTest {
+
+    private URI newInstanceURI() {
+        return URI.create("urn:uuid:"+ UUID.randomUUID());
+    }
 
     private static final ObjectMapper OM = new ObjectMapper();
 
@@ -64,7 +71,7 @@ public class Couch2rResponseUtilTest {
         ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
         verify(writerMock).print(argument.capture());
 
-        final String expected = removeInstancePart(problemDetail.serializeAsJson());
+        final String expected = removeInstancePart(problemDetail.toJson());
         final String actual = removeInstancePart(argument.getValue());
 
         Assertions.assertEquals(
@@ -206,11 +213,12 @@ public class Couch2rResponseUtilTest {
 
     @Test
     void testPlainProblemDetailBody() {
-        final ProblemDetail detail = ProblemDetail.byUrn(
+        final ProblemDetail detail = new ProblemDetailDto(
                 "abc123",
                 "Error",
                 "Somewhat bad happened",
-                500
+                500,
+                newInstanceURI()
         );
 
         final ResponseEntity re = ResponseEntity.ok(detail);
@@ -226,7 +234,7 @@ public class Couch2rResponseUtilTest {
 
     @Test
     void testProblemDescriptorBody() {
-        final ProblemDescriptor descriptor = new ProblemDescriptor(
+        final I18nProblemDetailDescriptor descriptor = new I18nProblemDetailDescriptor(
                 "testType",
                 "test.test.test",
                 "test.test.test",
@@ -246,7 +254,7 @@ public class Couch2rResponseUtilTest {
 
     @Test
     void testProblemDescriptorBodyWithLocale() {
-        final ProblemDescriptor descriptor = new ProblemDescriptor(
+        final I18nProblemDetailDescriptor descriptor = new I18nProblemDetailDescriptor(
                 "testType",
                 "test.test.test",
                 "test.test.test",
@@ -266,14 +274,14 @@ public class Couch2rResponseUtilTest {
 
     @Test
     void testAttributedProblemDescriptorBody() {
-        final ProblemDescriptor descriptor = new ProblemDescriptor(
+        final I18nProblemDetailDescriptor descriptor = new I18nProblemDetailDescriptor(
                 "testType",
                 "test.test.test",
                 "test.test.test",
                 400
         );
 
-        final AttributedProblemDescriptor attributed = descriptor.withAttributes();
+        final AttributedI18nProblemDetailDescriptor attributed = descriptor.withAttributes();
         attributed.addAttribute("a1", "v1");
         attributed.addAttribute("a2", "v2");
 

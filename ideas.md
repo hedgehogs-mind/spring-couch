@@ -8,7 +8,9 @@
   - multiple interfaces?
     - ProblemDetailRuntimeException
     - ...
-   
+  
+
+- custom id parsers
 
 # Docs
 
@@ -24,21 +26,6 @@ public @interface EnableScheduling {
 
 }
 ```
-
-# Mapping type and more metadata
-
-In Couch2rMapping enum mapping type:
-
-- `FROM_REPOSITORY`
-  - already done
-- `FROM_ENTITY_TO_EXISTING_REPOSITORY`
-  - __todo__
-- `FROM_ENTITY_TO_NEW_REPOSITORY`
-  - already done
-
-Plus more fields:
-
-- optional repository interface (for embedded methods)
 
 # Register Exception Handler
 
