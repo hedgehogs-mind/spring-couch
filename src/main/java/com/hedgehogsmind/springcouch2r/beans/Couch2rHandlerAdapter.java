@@ -27,7 +27,7 @@ public class Couch2rHandlerAdapter implements HandlerAdapter {
     }
 
     @Override
-    public ModelAndView handle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+    public ModelAndView handle(HttpServletRequest request, HttpServletResponse response, Object handler) {
 
         ResponseEntity responseEntityToSend = null;
 

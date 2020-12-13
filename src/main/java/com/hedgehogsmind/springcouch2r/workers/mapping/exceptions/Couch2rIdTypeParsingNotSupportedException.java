@@ -3,7 +3,6 @@ package com.hedgehogsmind.springcouch2r.workers.mapping.exceptions;
 import com.hedgehogsmind.springcouch2r.rest.problemdetail.ProblemDetail;
 import com.hedgehogsmind.springcouch2r.rest.problemdetail.ProblemDetailConvertibleRuntimeException;
 import com.hedgehogsmind.springcouch2r.rest.problemdetail.problems.Couch2rProblems;
-import org.springframework.http.ResponseEntity;
 
 import java.util.Locale;
 

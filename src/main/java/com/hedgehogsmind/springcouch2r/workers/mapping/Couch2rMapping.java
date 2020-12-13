@@ -123,21 +123,12 @@ public class Couch2rMapping {
         } else if ( additionalParts.length == 1 ) {
 
             // Get one by id
+            final Object parsedId = parseId(additionalParts[0]);
 
-            try {
-                final Object parsedId = parseId(additionalParts[0]);
+            final Optional<Object> entityInstance = repository.findById(parsedId);
+            if ( entityInstance.isEmpty() ) return ResponseEntity.notFound().build();
 
-                final Optional<Object> entityInstance = repository.findById(parsedId);
-                if ( entityInstance.isEmpty() ) return ResponseEntity.notFound().build();
-
-                return ResponseEntity.ok(entityInstance.get());
-
-            } catch ( Couch2rIdValueNotParsableException e ) {
-                return Couch2rProblems.WRONG_ID_TYPE.toResponseEntity();
-
-            } catch ( Couch2rIdTypeParsingNotSupportedException e ) {
-                return e.toResponseEntity();
-            }
+            return ResponseEntity.ok(entityInstance.get());
 
         } else {
             return Couch2rProblems.TOO_MANY_PATH_VARIABLES.toResponseEntity();

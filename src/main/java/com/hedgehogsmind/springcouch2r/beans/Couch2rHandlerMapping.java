@@ -28,7 +28,7 @@ public class Couch2rHandlerMapping implements HandlerMapping, Ordered {
     }
 
     @Override
-    public HandlerExecutionChain getHandler(HttpServletRequest request) throws Exception {
+    public HandlerExecutionChain getHandler(HttpServletRequest request) {
         final String path = Couch2rPathUtil.normalizeWithTrailingSlash(
                 UrlPathHelper.defaultInstance.getPathWithinApplication(request)
         );
