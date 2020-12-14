@@ -1,22 +1,21 @@
 package com.hedgehogsmind.springcouch2r.beans;
 
-import com.hedgehogsmind.springcouch2r.workers.mapping.Couch2rMapping;
-import com.hedgehogsmind.springcouch2r.util.Couch2rPathUtil;
-import lombok.RequiredArgsConstructor;
+import com.hedgehogsmind.springcouch2r.util.Couch2rRequestUtil;
+import com.hedgehogsmind.springcouch2r.workers.mapping.Couch2rMappedResource;
 import org.springframework.core.Ordered;
-import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerExecutionChain;
 import org.springframework.web.servlet.HandlerMapping;
-import org.springframework.web.util.UrlPathHelper;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 public class Couch2rHandlerMapping implements HandlerMapping, Ordered {
 
     private final Couch2rCore couch2rCore;
 
-    private Map<String, Couch2rMapping> mappingCache = new HashMap<>();
+    private final Map<String, Couch2rMappedResource> mappedResourceCache = new HashMap<>();
 
     public Couch2rHandlerMapping(Couch2rCore couch2rCore) {
         this.couch2rCore = couch2rCore;
@@ -29,45 +28,47 @@ public class Couch2rHandlerMapping implements HandlerMapping, Ordered {
 
     @Override
     public HandlerExecutionChain getHandler(HttpServletRequest request) {
-        final String path = Couch2rPathUtil.normalizeWithTrailingSlash(
-                UrlPathHelper.defaultInstance.getPathWithinApplication(request)
-        );
+        final String couch2rBasePath = couch2rCore.getCouch2rConfiguration().getCouch2rBasePath();
+        final String path = Couch2rRequestUtil.getRequestPathWithTrailingSlash(request);
 
-        // TODO @peter insert default interceptors
-        //  > https://www.baeldung.com/spring-mvc-handlerinterceptor
-        final Couch2rMapping mapping = getAndCache(path);
+        if ( path.startsWith(couch2rBasePath) ) {
+            final String couch2rPath = path.substring(couch2rBasePath.length());
+            final int indexOfFirstSlash = couch2rPath.indexOf("/");
+            final String resourcePath = indexOfFirstSlash < 0 ?
+                    "" :
+                    couch2rPath.substring(0, indexOfFirstSlash+1); // +1 >> to maintain trailing slash
 
-        if ( mapping == null ) return null; // next HandlerMapping
+            if ( !resourcePath.isEmpty() ) {
+                final Optional<Couch2rMappedResource> mappedResource = getMappedResource(resourcePath);
 
-        return new HandlerExecutionChain(mapping);
+                if ( mappedResource.isPresent() ) {
+                    // TODO @peter insert default interceptors
+                    return new HandlerExecutionChain(mappedResource.get());
+                }
+            }
+        }
+
+        return null;
     }
 
     /**
-     * <p>
-     *     First tries to find mapping in cache map. If present it is returned.
-     * </p>
+     * Tries to find mapped resource using cache or by on the fly finding a mapping.
      *
-     * <p>
-     *     Otherwise we search a mapping that fits. If one has been found, we cache it
-     *     and return it. If no mapping has been found, we return null.
-     * </p>
-     *
-     * @param path Path to get mapping for.
-     * @return Mapping or null if no mapping fits.
+     * @param resourcePath Resource path. Must end with trailing slash in order to work properly.
+     * @return Mapped resource or empty if none is present for the given path.
      */
-    protected Couch2rMapping getAndCache(final String path) {
-        final Couch2rMapping cachedMapping = mappingCache.get(path);
+    protected Optional<Couch2rMappedResource> getMappedResource(final String resourcePath) {
+        final Couch2rMappedResource cacheEntry = mappedResourceCache.get(resourcePath);
+        if (cacheEntry != null) return Optional.of(cacheEntry);
 
-        if ( cachedMapping != null ) return cachedMapping;
+        final Optional<Couch2rMappedResource> match = couch2rCore.getMappingByCouch2rResourcePath(resourcePath);
 
-        final Optional<Couch2rMapping> matchingMapping = couch2rCore.getCouch2rMappings().stream()
-                .filter(mapping -> path.startsWith(mapping.getPathWithTrailingSlash()))
-                .findAny();
+        if (match.isPresent()) {
+            mappedResourceCache.put(resourcePath, match.get());
+            return match;
+        }
 
-        if ( matchingMapping.isEmpty() ) return null;
-
-        mappingCache.put(path, matchingMapping.get());
-        return matchingMapping.get();
+        return Optional.empty();
     }
 
 }

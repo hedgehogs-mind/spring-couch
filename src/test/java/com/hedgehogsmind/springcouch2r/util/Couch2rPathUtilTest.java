@@ -24,6 +24,11 @@ public class Couch2rPathUtilTest {
                 "/hello/world/test/",
                 Couch2rPathUtil.normalizeWithTrailingSlash("///////hello////world/test/")
         );
+
+        Assertions.assertEquals(
+                "",
+                Couch2rPathUtil.normalizeWithTrailingSlash("")
+        );
     }
 
     @Test

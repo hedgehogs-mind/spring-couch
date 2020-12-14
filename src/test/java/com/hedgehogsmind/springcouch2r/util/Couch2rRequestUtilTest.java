@@ -35,4 +35,28 @@ public class Couch2rRequestUtilTest {
         );
     }
 
+    @Test
+    public void testGetPathWithoutTrailingSlash() {
+        final HttpServletRequest request = mock(HttpServletRequest.class);
+        when(request.getContextPath()).thenReturn("");
+        when(request.getRequestURI()).thenReturn("hello/world");
+
+        Assertions.assertEquals(
+                "hello/world/",
+                Couch2rRequestUtil.getRequestPathWithTrailingSlash(request)
+        );
+    }
+
+    @Test
+    public void testGetPathWithTrailingSlash() {
+        final HttpServletRequest request = mock(HttpServletRequest.class);
+        when(request.getContextPath()).thenReturn("");
+        when(request.getRequestURI()).thenReturn("hello/world/");
+
+        Assertions.assertEquals(
+                "hello/world/",
+                Couch2rRequestUtil.getRequestPathWithTrailingSlash(request)
+        );
+    }
+
 }

@@ -12,7 +12,8 @@ import com.hedgehogsmind.springcouch2r.data.discovery.Couch2rDiscoveredUnit;
 import com.hedgehogsmind.springcouch2r.util.Couch2rEntityUtil;
 import com.hedgehogsmind.springcouch2r.util.Couch2rPathUtil;
 import com.hedgehogsmind.springcouch2r.workers.discovery.Couch2rDiscovery;
-import com.hedgehogsmind.springcouch2r.workers.mapping.Couch2rMapping;
+import com.hedgehogsmind.springcouch2r.workers.mapping.Couch2rMappedResource;
+import com.hedgehogsmind.springcouch2r.workers.mapping.entity.Couch2rEntityMapping;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
@@ -38,7 +39,7 @@ public class Couch2rCore {
 
     private Couch2rDiscovery couch2rDiscovery;
 
-    private Set<Couch2rMapping> couch2rMappings;
+    private Set<Couch2rMappedResource> couch2rMappings;
 
     /**
      * Dependency injection constructor.
@@ -125,15 +126,16 @@ public class Couch2rCore {
     /**
      * <p>
      *      Creates new Couch2rMapping for each discovered repo. Resource path is constructed
-     *      by {@link #constructResourcePathAndAssertNoPathClash(Couch2rDiscoveredUnit)}.
+     *      by {@link #constructEntityResourcePathAndAssertNoPathClash(Couch2rDiscoveredUnit)}.
      *      Registers mapping at internal set.
      * </p>
      */
     protected void setupRepositoryMappings() {
         couch2rDiscovery.getDiscoveredCrudRepositories().forEach(discoveredRepo -> {
-            final Couch2rMapping newRepositoryMapping = new Couch2rMapping(
+            final Couch2rEntityMapping newRepositoryMapping = new Couch2rEntityMapping(
+                    constructFullEntityResourcePathAndAssertNoPathClash(discoveredRepo),
+                    constructEntityResourcePathAndAssertNoPathClash(discoveredRepo),
                     discoveredRepo,
-                    constructResourcePathAndAssertNoPathClash(discoveredRepo),
                     discoveredRepo.getCrudRepository(),
                     discoveredRepo.getEntityType()
             );
@@ -150,7 +152,7 @@ public class Couch2rCore {
      *
      * <p>
      *     Then a new mapping is created. Resource path is constructed using
-     *     {@link #constructResourcePathAndAssertNoPathClash(Couch2rDiscoveredUnit)}.
+     *     {@link #constructEntityResourcePathAndAssertNoPathClash(Couch2rDiscoveredUnit)}.
      *     Then mapping is registered at internal set.
      * </p>
      */
@@ -172,9 +174,10 @@ public class Couch2rCore {
                 );
             }
 
-            final Couch2rMapping newEntityMapping = new Couch2rMapping(
+            final Couch2rEntityMapping newEntityMapping = new Couch2rEntityMapping(
+                    constructFullEntityResourcePathAndAssertNoPathClash(discoveredEntity),
+                    constructEntityResourcePathAndAssertNoPathClash(discoveredEntity),
                     discoveredEntity,
-                    constructResourcePathAndAssertNoPathClash(discoveredEntity),
                     new SimpleJpaRepository(
                             discoveredEntity.getEntityClass(),
                             entityManager
@@ -190,33 +193,29 @@ public class Couch2rCore {
      * <p>
      *     <ul>
      *         <li>Computes resource name: Entity class name or name() of Couch2r annotation if not empty.</li>
-     *         <li>Compute path using {@link Couch2rConfiguration#getCouch2rBasePath()}</li>
      *         <li>Check if there is already a mapping with the same path</li>
      *         <li>Return path (with trailing slash)</li>
      *     </ul>
      * </p>
      *
-     * @param discoveredUnit Discovered unit to create resource path for (based on couch2r config).
+     * @param discoveredUnit Discovered unit to create resource path for.
      * @return Resource path with trailing slash.
      * @throws Couch2rResourcePathClashException if there is already a mapping with the same path.
      */
-    protected String constructResourcePathAndAssertNoPathClash(final Couch2rDiscoveredUnit discoveredUnit) {
+    protected String constructEntityResourcePathAndAssertNoPathClash(final Couch2rDiscoveredUnit discoveredUnit) {
         final String resourceName = !discoveredUnit.getTagAnnotation().resourceName().isBlank() ?
                 discoveredUnit.getTagAnnotation().resourceName() :
                 Couch2rEntityUtil.getEntityClassNameSnakeCase(discoveredUnit.getEntityClass());
 
-        final String path = Couch2rPathUtil.normalizeWithTrailingSlash(
-                couch2rConfiguration.getCouch2rBasePath() +
-                        resourceName
-        );
+        final String path = Couch2rPathUtil.normalizeWithTrailingSlash(resourceName);
 
-        final Optional<Couch2rMapping> existingMapping =
-                getMappingByPath(path);
+        final Optional<Couch2rMappedResource> existingMapping =
+                getMappingByCouch2rResourcePath(path);
 
         if ( existingMapping.isPresent() ) {
             throw new Couch2rResourcePathClashException(
                     "There is a path clash for entity '"+discoveredUnit.getEntityClass()+"'. The path '"+path+"' is already taken.\n" +
-                            "Existing mapping's source: "+existingMapping.get().getDiscoveredUnit().getTagAnnotationSource()+"\n" +
+                            "Existing mapping's source: "+existingMapping.get().getMappingSource().getTagAnnotationSource()+"\n" +
                             "New (attempted) mapping's source: "+discoveredUnit.getTagAnnotationSource()+"\n" +
                             "You may change the entity class name or specify different names in the Couch2r annotation using 'resourceName'."
             );
@@ -226,15 +225,27 @@ public class Couch2rCore {
     }
 
     /**
-     * Tries to find a Couch2rMapping by path.
+     * Convenience method. Prepends {@link Couch2rConfiguration#getCouch2rBasePath()} before
+     * @link #constructEntityResourcePathAndAssertNoPathClash(Couch2rDiscoveredUnit)}.
+     *
+     * @param discoveredUnit Discovered unit to create resource path for.
+     * @return Couch2r base path plus resource path with trailing slash.
+     */
+    protected String constructFullEntityResourcePathAndAssertNoPathClash(final Couch2rDiscoveredUnit discoveredUnit) {
+        return couch2rConfiguration.getCouch2rBasePath() + constructEntityResourcePathAndAssertNoPathClash(discoveredUnit);
+    }
+
+    /**
+     * Tries to find a Couch2rMapping by path ({@link Couch2rMappedResource#getCouch2rResourcePath()} ()}.
+     *
      * @param path Path to search for.
      * @return Mapping or empty.
      */
-    protected Optional<Couch2rMapping> getMappingByPath(final String path) {
+    protected Optional<Couch2rMappedResource> getMappingByCouch2rResourcePath(final String path) {
         if ( !path.endsWith("/") ) throw new IllegalArgumentException("path must end with trailing slash");
 
         return couch2rMappings.stream()
-                .filter(m -> m.getPathWithTrailingSlash().equals(path))
+                .filter(m -> m.getCouch2rResourcePath().equals(path))
                 .findAny();
     }
 
@@ -246,11 +257,11 @@ public class Couch2rCore {
         return couch2rConfiguration;
     }
 
-    public Set<Couch2rMapping> getCouch2rMappings() {
+    public Set<Couch2rMappedResource> getCouch2rMappings() {
         return couch2rMappings;
     }
 
-    public void setCouch2rMappings(Set<Couch2rMapping> couch2rMappings) {
+    public void setCouch2rMappings(Set<Couch2rMappedResource> couch2rMappings) {
         this.couch2rMappings = couch2rMappings;
     }
 }

@@ -1,5 +1,7 @@
 package com.hedgehogsmind.springcouch2r.util;
 
+import org.springframework.web.util.UrlPathHelper;
+
 import javax.servlet.http.HttpServletRequest;
 import java.util.Locale;
 
@@ -18,6 +20,19 @@ public final class Couch2rRequestUtil {
         return request.getLocales().hasMoreElements() ?
                 request.getLocale() :
                 defaultLocale;
+    }
+
+    /**
+     * Fetches path using {@link UrlPathHelper} and normalizes the value with
+     * {@link Couch2rPathUtil#normalizeWithTrailingSlash(String)}.
+     *
+     * @param request Request to get
+     * @return
+     */
+    public static String getRequestPathWithTrailingSlash(final HttpServletRequest request) {
+        return Couch2rPathUtil.normalizeWithTrailingSlash(
+                UrlPathHelper.defaultInstance.getPathWithinApplication(request)
+        );
     }
 
 }

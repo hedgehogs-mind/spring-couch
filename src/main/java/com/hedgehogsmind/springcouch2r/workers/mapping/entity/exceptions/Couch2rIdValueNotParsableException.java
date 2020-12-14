@@ -1,4 +1,4 @@
-package com.hedgehogsmind.springcouch2r.workers.mapping.exceptions;
+package com.hedgehogsmind.springcouch2r.workers.mapping.entity.exceptions;
 
 import com.hedgehogsmind.springcouch2r.rest.problemdetail.ProblemDetail;
 import com.hedgehogsmind.springcouch2r.rest.problemdetail.ProblemDetailConvertibleRuntimeException;

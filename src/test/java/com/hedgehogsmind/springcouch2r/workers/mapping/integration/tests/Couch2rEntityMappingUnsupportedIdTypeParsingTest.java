@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-public class Couch2rMappingUnsupportedIdTypeParsingTest extends Couch2rIntegrationTestBase {
+public class Couch2rEntityMappingUnsupportedIdTypeParsingTest extends Couch2rIntegrationTestBase {
 
     @BeforeAll
     public void assertState() {

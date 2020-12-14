@@ -14,13 +14,19 @@ public final class Couch2rPathUtil {
 
     /**
      * First multiple slashes are removed and then a trailing slash is appended if not present yet.
+     * <b>Adds trailing slash only if the path is not empty!</b>
      *
      * @param path Path to modify.
      * @return Path without multiple slashes and with trailing slash.
      */
     public static String normalizeWithTrailingSlash(final String path) {
+        if ( path.isEmpty() ) return "";
+
         final String onlySingleSlashes = removeMultipleSlashes(path);
-        return onlySingleSlashes.endsWith("/") ? onlySingleSlashes : onlySingleSlashes + "/";
+
+        return onlySingleSlashes.endsWith("/") ?
+                onlySingleSlashes :
+                onlySingleSlashes + "/";
     }
 
     /**

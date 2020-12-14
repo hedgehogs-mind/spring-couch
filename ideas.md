@@ -1,4 +1,6 @@
 - logging
+- json batch
+- test which asserts, that every Couch2rPrblem is documented inside get_started.md
 
 - IdTypeParsingNotSupportedException
 - ProblemDetailRuntimeException

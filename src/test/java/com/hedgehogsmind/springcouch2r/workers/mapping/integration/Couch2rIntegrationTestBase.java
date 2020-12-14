@@ -6,7 +6,8 @@ import com.hedgehogsmind.springcouch2r.beans.Couch2rHandlerAdapter;
 import com.hedgehogsmind.springcouch2r.beans.Couch2rHandlerMapping;
 import com.hedgehogsmind.springcouch2r.beans.EnableCouch2r;
 import com.hedgehogsmind.springcouch2r.configuration.Couch2rConfiguration;
-import com.hedgehogsmind.springcouch2r.workers.mapping.Couch2rMapping;
+import com.hedgehogsmind.springcouch2r.workers.mapping.entity.Couch2rEntityMapping;
+import com.hedgehogsmind.springcouch2r.workers.mapping.Couch2rMappedResource;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterEach;
@@ -126,12 +127,13 @@ public abstract class Couch2rIntegrationTestBase {
     /**
      * Asserts that {@link Couch2rCore#getCouch2rMappings()} has a mapping for the given entity (class).
      *
-     * @param entityClass Entity class to find {@link Couch2rMapping} for.
+     * @param entityClass Entity class to find {@link Couch2rEntityMapping} for.
      */
     protected void assertMappingExists(final Class<?> entityClass) {
-        final Optional<Couch2rMapping> entityMapping = core.getCouch2rMappings()
+        final Optional<Couch2rMappedResource> entityMapping = core.getCouch2rMappings()
                 .stream()
-                .filter(mapping -> mapping.getEntityType().getJavaType().equals(entityClass))
+                .filter(mapping -> mapping instanceof Couch2rEntityMapping)
+                .filter(mapping -> ((Couch2rEntityMapping)mapping).getEntityType().getJavaType().equals(entityClass))
                 .findAny();
 
         if ( entityMapping.isEmpty() ) {
@@ -166,7 +168,7 @@ public abstract class Couch2rIntegrationTestBase {
             throw new IllegalStateException("No mapping for URI: "+request.getRequestURI());
         }
 
-        if ( !(executionChain.getHandler() instanceof Couch2rMapping) ) {
+        if ( !(executionChain.getHandler() instanceof Couch2rEntityMapping) ) {
             throw new IllegalStateException("HandlerMapping did not return Couch2rMapping handler, instead was: "+executionChain.getHandler());
         }
 

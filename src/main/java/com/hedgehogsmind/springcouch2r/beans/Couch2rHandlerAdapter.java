@@ -4,7 +4,7 @@ import com.hedgehogsmind.springcouch2r.rest.problemdetail.ProblemDetailConvertib
 import com.hedgehogsmind.springcouch2r.rest.problemdetail.problems.Couch2rProblems;
 import com.hedgehogsmind.springcouch2r.util.Couch2rRequestUtil;
 import com.hedgehogsmind.springcouch2r.util.Couch2rResponseUtil;
-import com.hedgehogsmind.springcouch2r.workers.mapping.Couch2rMapping;
+import com.hedgehogsmind.springcouch2r.workers.mapping.Couch2rMappedResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.servlet.HandlerAdapter;
 import org.springframework.web.servlet.ModelAndView;
@@ -13,6 +13,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Locale;
 
+/**
+ * Supports handling {@link Couch2rMappedResource}s.
+ */
 public class Couch2rHandlerAdapter implements HandlerAdapter {
 
     private final Couch2rCore couch2rCore;
@@ -23,7 +26,7 @@ public class Couch2rHandlerAdapter implements HandlerAdapter {
 
     @Override
     public boolean supports(Object handler) {
-        return handler instanceof Couch2rMapping;
+        return handler instanceof Couch2rMappedResource;
     }
 
     @Override
@@ -32,7 +35,7 @@ public class Couch2rHandlerAdapter implements HandlerAdapter {
         ResponseEntity responseEntityToSend = null;
 
         try {
-            responseEntityToSend = ((Couch2rMapping) handler).handle(
+            responseEntityToSend = ((Couch2rMappedResource) handler).handle(
                     request,
                     couch2rCore.getCouch2rObjectMapper()
             );

@@ -4,7 +4,8 @@ import com.hedgehogsmind.springcouch2r.annotations.Couch2r;
 import com.hedgehogsmind.springcouch2r.beans.Couch2rCore;
 import com.hedgehogsmind.springcouch2r.configuration.Couch2rConfiguration;
 import com.hedgehogsmind.springcouch2r.configuration.DummyTestCouch2rConfiguration;
-import com.hedgehogsmind.springcouch2r.workers.mapping.Couch2rMapping;
+import com.hedgehogsmind.springcouch2r.workers.mapping.entity.Couch2rEntityMapping;
+import com.hedgehogsmind.springcouch2r.workers.mapping.Couch2rMappedResource;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,27 +95,27 @@ public class Couch2rCoreEverythingFineTest {
         final Couch2rConfiguration config = core.getCouch2rConfiguration();
         final String prefix = config.getCouch2rBasePath();
 
-        final Set<Couch2rMapping> mappings = core.getCouch2rMappings();
-        final Optional<Couch2rMapping> repo1MappingResult = mappings.stream().filter(m -> m.getEntityType().getJavaType() == RepoEntity1.class).findAny();
-        final Optional<Couch2rMapping> repo2MappingResult = mappings.stream().filter(m -> m.getEntityType().getJavaType() == RepoEntity2.class).findAny();
-        final Optional<Couch2rMapping> standalone1MappingResult = mappings.stream().filter(m -> m.getEntityType().getJavaType() == StandaloneEntity1.class).findAny();
-        final Optional<Couch2rMapping> standalone2MappingResult = mappings.stream().filter(m -> m.getEntityType().getJavaType() == StandaloneEntity2.class).findAny();
+        final Set<Couch2rMappedResource> mappings = core.getCouch2rMappings();
+        final Optional<Couch2rEntityMapping> repo1MappingResult = mappings.stream().filter(m -> m instanceof Couch2rEntityMapping).map(m -> (Couch2rEntityMapping)m).filter(m -> m.getEntityType().getJavaType() == RepoEntity1.class).findAny();
+        final Optional<Couch2rEntityMapping> repo2MappingResult = mappings.stream().filter(m -> m instanceof Couch2rEntityMapping).map(m -> (Couch2rEntityMapping)m).filter(m -> m.getEntityType().getJavaType() == RepoEntity2.class).findAny();
+        final Optional<Couch2rEntityMapping> standalone1MappingResult = mappings.stream().filter(m -> m instanceof Couch2rEntityMapping).map(m -> (Couch2rEntityMapping)m).filter(m -> m.getEntityType().getJavaType() == StandaloneEntity1.class).findAny();
+        final Optional<Couch2rEntityMapping> standalone2MappingResult = mappings.stream().filter(m -> m instanceof Couch2rEntityMapping).map(m -> (Couch2rEntityMapping)m).filter(m -> m.getEntityType().getJavaType() == StandaloneEntity2.class).findAny();
 
         Assertions.assertTrue(repo1MappingResult.isPresent(), "no mapping for RepoEntity1");
         Assertions.assertTrue(repo2MappingResult.isPresent(), "no mapping for RepoEntity2");
         Assertions.assertTrue(standalone1MappingResult.isPresent(), "no mapping for StandaloneEntity1");
         Assertions.assertTrue(standalone2MappingResult.isPresent(), "no mapping for StandaloneEntity2");
 
-        final Couch2rMapping repo1Mapping = repo1MappingResult.get();
-        final Couch2rMapping repo2Mapping = repo2MappingResult.get();
-        final Couch2rMapping standalone1Mapping = standalone1MappingResult.get();
-        final Couch2rMapping standalone2Mapping = standalone2MappingResult.get();
+        final Couch2rEntityMapping repo1Mapping = repo1MappingResult.get();
+        final Couch2rEntityMapping repo2Mapping = repo2MappingResult.get();
+        final Couch2rEntityMapping standalone1Mapping = standalone1MappingResult.get();
+        final Couch2rEntityMapping standalone2Mapping = standalone2MappingResult.get();
 
         // Check resource paths
-        Assertions.assertEquals(prefix+"repoEntity1/", repo1Mapping.getPathWithTrailingSlash());
-        Assertions.assertEquals(prefix+"B2/", repo2Mapping.getPathWithTrailingSlash());
-        Assertions.assertEquals(prefix+"standaloneEntity1/", standalone1Mapping.getPathWithTrailingSlash());
-        Assertions.assertEquals(prefix+"standalone2/", standalone2Mapping.getPathWithTrailingSlash());
+        Assertions.assertEquals(prefix+"repoEntity1/", repo1Mapping.getFullPath());
+        Assertions.assertEquals(prefix+"B2/", repo2Mapping.getFullPath());
+        Assertions.assertEquals(prefix+"standaloneEntity1/", standalone1Mapping.getFullPath());
+        Assertions.assertEquals(prefix+"standalone2/", standalone2Mapping.getFullPath());
 
         // Check repos are not null
         Assertions.assertNotNull(repo1Mapping.getRepository());
@@ -129,10 +130,10 @@ public class Couch2rCoreEverythingFineTest {
         Assertions.assertEquals(StandaloneEntity2.class, standalone2Mapping.getEntityType().getJavaType());
 
         // Check that sources are correct
-        Assertions.assertEquals(Repo1.class, repo1Mapping.getDiscoveredUnit().getTagAnnotationSource());
-        Assertions.assertEquals(Repo2.class, repo2Mapping.getDiscoveredUnit().getTagAnnotationSource());
-        Assertions.assertEquals(StandaloneEntity1.class, standalone1Mapping.getDiscoveredUnit().getTagAnnotationSource());
-        Assertions.assertEquals(StandaloneEntity2.class, standalone2Mapping.getDiscoveredUnit().getTagAnnotationSource());
+        Assertions.assertEquals(Repo1.class, repo1Mapping.getMappingSource().getTagAnnotationSource());
+        Assertions.assertEquals(Repo2.class, repo2Mapping.getMappingSource().getTagAnnotationSource());
+        Assertions.assertEquals(StandaloneEntity1.class, standalone1Mapping.getMappingSource().getTagAnnotationSource());
+        Assertions.assertEquals(StandaloneEntity2.class, standalone2Mapping.getMappingSource().getTagAnnotationSource());
     }
 
 }
