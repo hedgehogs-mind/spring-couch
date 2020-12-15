@@ -19,9 +19,11 @@ There may appear further informative attributes. This depends on the implementat
 
 |type|status|additional attributes (not mandatory)|explanation|
 |---|---|---|---|
-| couch2r-unknown-problem | 500 |  | Returned if an error which can not be classified or handled occurred. |
-| couch2r-too-many-path-variables | 400 |  | Returned if there are too many path variables (e.g. "/couch2r/entity/1 **/tooMuch/vars**") |
-| couch2r-wrong-id-type | 400 |  | Returned if the ID type does not match the resource ID's type.  |
-| couch2r-id-parsing-not-supported | 500 | `unsupportedType` | The Couch2r ID parser does not support parsing ID of entity's type. |
+| urn:problem-type:couch2r-unknown-problem | 500 |  | Returned if an error which can not be classified or handled occurred. |
+| urn:problem-type:couch2r-too-many-path-variables | 400 |  | Returned if there are too many path variables (e.g. "/couch2r/entity/1 **/tooMuch/vars**") |
+| urn:problem-type:couch2r-wrong-id-type | 400 |  | Returned if the ID type does not match the resource ID's type.  |
+| urn:problem-type:couch2r-id-parsing-not-supported | 500 | `unsupportedType` | The Couch2r ID parser does not support parsing ID of entity's type. |
+| urn:problem-type:couch2r-not-found | 404 |  | The requested mapping does not exist or the action on the resource is not available / was not found. |
 |  |  |  |  |
+
 

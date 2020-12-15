@@ -141,27 +141,35 @@ public class Couch2rProblemsTest {
         }
     }
 
+    public static List<I18nProblemDetailDescriptor> getAllProblemDescriptors() {
+        final Field[] allFields = CLAZZ.getDeclaredFields();
+
+        return Arrays.stream(allFields)
+                .filter(f -> f.getType() == I18nProblemDetailDescriptor.class)
+                .map(f -> {
+                    try {
+                        return (I18nProblemDetailDescriptor) f.get(null);
+                    } catch ( IllegalAccessException e ) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .collect(Collectors.toList());
+    }
+
     @Test
     public void testAllKeysImplemented() {
         final HashMap<Locale, List<String>> missingLocaleKeys = new HashMap<>();
 
         final List<String> allKeys = new ArrayList<>();
-        final Field[] allFields = CLAZZ.getDeclaredFields();
+
 
         boolean foundMissingKey = false;
 
-        Arrays.stream(allFields)
-                .filter(f -> f.getType() == I18nProblemDetailDescriptor.class)
-                .forEach(f -> {
-                    try {
-                        final I18nProblemDetailDescriptor descriptor = (I18nProblemDetailDescriptor) f.get(null);
-                        allKeys.add(descriptor.getTitleKey());
-                        allKeys.add(descriptor.getDetailKey());
-
-                    } catch ( Throwable t ) {
-                        throw new RuntimeException(t); // if thrown here, probably not public static!
-                    }
-                });
+        getAllProblemDescriptors().forEach(descriptor -> {
+                    allKeys.add(descriptor.getTitleKey());
+                    allKeys.add(descriptor.getDetailKey());
+                }
+        );
 
         for ( final Locale locale : REQUIRED_LOCALES ) {
             final List<String> missingKeys = new ArrayList<>();

@@ -1,6 +1,7 @@
 - logging
+  - especially unhandled exceptions
+  - logging of problem details > really ? isn't this overhead?
 - json batch
-- test which asserts, that every Couch2rPrblem is documented inside get_started.md
 
 - IdTypeParsingNotSupportedException
 - ProblemDetailRuntimeException
