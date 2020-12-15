@@ -1,7 +1,6 @@
 package com.hedgehogsmind.springcouch2r.workers.mapping.integration.tests;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.hedgehogsmind.springcouch2r.rest.problemdetail.ProblemDetailConvertible;
 import com.hedgehogsmind.springcouch2r.rest.problemdetail.problems.Couch2rProblems;
 import com.hedgehogsmind.springcouch2r.workers.mapping.integration.Couch2rIntegrationTestBase;
 import com.hedgehogsmind.springcouch2r.workers.mapping.integration.env.TestNoteEntity;
@@ -13,7 +12,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -75,21 +73,17 @@ public class Couch2rCrudMethodsTest extends Couch2rIntegrationTestBase {
         Assertions.assertEquals(persistedTestNotes.get(0), note);
     }
 
-//    @Test
-//    public void testGetTooManyPathVariables() {
-//        final ResponseEntity re = perform("GET", "/1/2");
-//
-//        Assertions.assertTrue(re.getBody() instanceof ProblemDetailConvertible);
-//        Assertions.assertEquals(Couch2rProblems.TOO_MANY_PATH_VARIABLES, re.getBody());
-//    }
-
     @Test
     public void testGetWrongIdType() {
         perform(mockRequest("GET", getNoteBasePath()+"abc"));
+        assertProblemDetailGiven(Couch2rProblems.WRONG_ID_TYPE);
+    }
 
-        final JSONObject response = getResponseJson();
-        Assertions.assertTrue(response.has("type"));
-        Assertions.assertEquals(Couch2rProblems.WRONG_ID_TYPE.getType().toString(), response.getString("type"));
+    @Test
+    public void testMethodNotKnown() {
+        // under this path is (probably) never a mapping available
+        perform(mockRequest("GET", getNoteBasePath()+"1/2/3/4/5/6/7/8/9"));
+        assertProblemDetailGiven(Couch2rProblems.NOT_FOUND);
     }
 
 }

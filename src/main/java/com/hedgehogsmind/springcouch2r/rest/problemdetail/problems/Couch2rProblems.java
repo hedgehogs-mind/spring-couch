@@ -5,6 +5,13 @@ import com.hedgehogsmind.springcouch2r.rest.problemdetail.I18nProblemDetailDescr
 
 public final class Couch2rProblems {
 
+    public static final I18nProblemDetailDescriptor NOT_FOUND = new I18nProblemDetailDescriptor(
+            "couch2r-not-found",
+            "notFound.title",
+            "notFound.detail",
+            404
+    );
+
     public static final I18nProblemDetailDescriptor UNKNOWN_PROBLEM = new I18nProblemDetailDescriptor(
             "couch2r-unknown-problem",
             "unknownProblem.title",

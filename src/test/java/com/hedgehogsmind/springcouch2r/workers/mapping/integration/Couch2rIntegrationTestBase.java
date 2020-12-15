@@ -6,6 +6,8 @@ import com.hedgehogsmind.springcouch2r.beans.Couch2rHandlerAdapter;
 import com.hedgehogsmind.springcouch2r.beans.Couch2rHandlerMapping;
 import com.hedgehogsmind.springcouch2r.beans.EnableCouch2r;
 import com.hedgehogsmind.springcouch2r.configuration.Couch2rConfiguration;
+import com.hedgehogsmind.springcouch2r.rest.problemdetail.I18nProblemDetailDescriptor;
+import com.hedgehogsmind.springcouch2r.rest.problemdetail.problems.Couch2rProblems;
 import com.hedgehogsmind.springcouch2r.workers.mapping.entity.Couch2rEntityMapping;
 import com.hedgehogsmind.springcouch2r.workers.mapping.Couch2rMappedResource;
 import org.json.JSONArray;
@@ -215,6 +217,29 @@ public abstract class Couch2rIntegrationTestBase {
         return new JSONArray(
                 getResponseBody()
         );
+    }
+
+    /**
+     * Fetches response via {@link #getResponseJson()} and asserts that the attribute
+     * "type" is given and matched the given expected type.
+     *
+     * @param expectedType Expected type.
+     */
+    protected void assertProblemDetailGiven(final String expectedType) {
+        final JSONObject response = getResponseJson();
+
+        Assertions.assertTrue(response.has("type"));
+        Assertions.assertEquals(expectedType, response.getString("type"));
+    }
+
+    /**
+     * Convenience method. Calls {@link #assertProblemDetailGiven(String)} with the string
+     * representation of {@link I18nProblemDetailDescriptor#getType()}.
+     *
+     * @param descriptor Descriptor holding type to check for.
+     */
+    protected void assertProblemDetailGiven(final I18nProblemDetailDescriptor descriptor) {
+        assertProblemDetailGiven(descriptor.getType().toString());
     }
 
 }

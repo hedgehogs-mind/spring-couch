@@ -68,24 +68,29 @@ public abstract class Couch2rMappedResourceBase implements Couch2rMappedResource
 
     /**
      * Fetches path, computes additional path variables, fetches locale etc and finally calls
-     * {@link #handle(HttpServletRequest, ObjectMapper, Locale, String[], Map)}.
+     * {@link #handle(HttpServletRequest, ObjectMapper, Locale, String, String[], Map)}.
      *
      * This method makes implementing the handler method way easier, because necessary data
      * is fetched beforehand (e.g. path variables).
      *
      * @param request Request.
      * @param objectMapper ObjectMapper for JSON actions.
-     * @return Response of {@link #handle(HttpServletRequest, ObjectMapper, Locale, String[], Map)} implementation.
+     * @return Response of {@link #handle(HttpServletRequest, ObjectMapper, Locale, String, String[], Map)} implementation.
      */
     @Override
     public ResponseEntity handle(HttpServletRequest request, ObjectMapper objectMapper) {
         final String path = Couch2rRequestUtil.getRequestPathWithTrailingSlash(request);
-        final String[] additionalPathVariables = path.substring(getFullPath().length()).split("/");
+        final String pathWithinCouch2rResource = path.substring(getFullPath().length()).trim();
+
+        final String[] additionalPathVariables = pathWithinCouch2rResource.isEmpty() ?
+                new String[0] :
+                pathWithinCouch2rResource.split("/");
 
         return handle(
                 request,
                 objectMapper,
                 Couch2rRequestUtil.fetchLocale(request, Locale.ENGLISH),
+                request.getMethod(),
                 additionalPathVariables,
                 request.getParameterMap()
         );
@@ -105,6 +110,7 @@ public abstract class Couch2rMappedResourceBase implements Couch2rMappedResource
             HttpServletRequest request,
             ObjectMapper objectMapper,
             Locale locale,
+            String method,
             String[] pathVariables,
             Map<String, String[]> queryParameters
     );
