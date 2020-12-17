@@ -13,24 +13,62 @@ import javax.persistence.Id;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Getter
-@Setter
 public class Address {
+
+
+    private long id;
+
+    private String street;
+
+    private String nr;
+
+    private String zip;
+
+    private String town;
 
     @Id
     @GeneratedValue
-    private long id;
+    public long getId() {
+        return id;
+    }
+
+    public void setid(long id) {
+        this.id = id;
+    }
 
     @Column(nullable = false)
-    private String street;
+    public String getStreet() {
+        return street;
+    }
+
+    public void setStreet(String street) {
+        this.street = street;
+    }
 
     @Column(nullable = false)
-    private String nr;
+    public String getNr() {
+        return nr;
+    }
+
+    public void setNr(String nr) {
+        this.nr = nr;
+    }
 
     @Column(nullable = false)
-    private String zip;
+    public String getZip() {
+        return zip;
+    }
+
+    public void setZip(String zip) {
+        this.zip = zip;
+    }
 
     @Column(nullable = false)
-    private String town;
+    public String getTown() {
+        return town;
+    }
 
+    public void setTown(String town) {
+        this.town = town;
+    }
 }

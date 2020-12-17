@@ -1,21 +1,14 @@
 package com.hedgehogsmind.springcouch2r.workers.mapping.entity;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hedgehogsmind.springcouch2r.data.discovery.Couch2rDiscoveredUnit;
-import com.hedgehogsmind.springcouch2r.rest.problemdetail.problems.Couch2rProblems;
-import com.hedgehogsmind.springcouch2r.util.Couch2rRequestUtil;
-import com.hedgehogsmind.springcouch2r.workers.mapping.Couch2rMappedResourceBase;
 import com.hedgehogsmind.springcouch2r.workers.mapping.Couch2rMappedResourceWithMethodsBase;
 import com.hedgehogsmind.springcouch2r.workers.mapping.Couch2rResourceMethod;
 import com.hedgehogsmind.springcouch2r.workers.mapping.entity.methods.Couch2rEntityGetMethod;
+import com.hedgehogsmind.springcouch2r.workers.mapping.entity.methods.Couch2rEntityPostMethod;
 import org.springframework.data.repository.CrudRepository;
-import org.springframework.http.ResponseEntity;
 
 import javax.persistence.metamodel.EntityType;
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 
 /**
  * <p>
@@ -60,7 +53,8 @@ public class Couch2rEntityMapping extends Couch2rMappedResourceWithMethodsBase {
     @Override
     protected List<Couch2rResourceMethod> createResourceMethods() {
         return List.of(
-                new Couch2rEntityGetMethod(this)
+                new Couch2rEntityGetMethod(this),
+                new Couch2rEntityPostMethod(this)
         );
     }
 

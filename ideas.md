@@ -1,34 +1,26 @@
+- entity method > cache id field and getter and setter
+
+- mapping test for both
+  - entity with @Couch2r and
+  - repo with @Couch2r
 - logging
   - especially unhandled exceptions
   - logging of problem details > really ? isn't this overhead?
 - json batch
+ 
+# Entity Mappings
 
-- IdTypeParsingNotSupportedException
-- ProblemDetailRuntimeException
-  - interface with ProblemDescriptor
-  - or ProblemDetail
-  - maybe just toDetail?
-  - multiple interfaces?
-    - ProblemDetailRuntimeException
-    - ...
-  
+- delete
+- update
+
+# More
 
 - custom id parsers
+- bean validations
 
 # Docs
 
 Docs!
-
-# Import annotation
-```
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
-@Import(SchedulingConfiguration.class)
-@Documented
-public @interface EnableScheduling {
-
-}
-```
 
 # Register Exception Handler
 
