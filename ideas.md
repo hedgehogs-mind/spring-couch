@@ -1,3 +1,9 @@
+- Couch2rHandlerMapping
+  - Logging
+  - WebMvcConfigurationSupport
+    - make optional > fetch interceptors only if present 
+    - __otherwise WARNING__ 
+
 - delete method
 - crud doc
 - modify system
