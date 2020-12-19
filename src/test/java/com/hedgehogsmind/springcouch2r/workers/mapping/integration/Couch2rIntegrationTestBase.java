@@ -7,7 +7,6 @@ import com.hedgehogsmind.springcouch2r.beans.Couch2rHandlerMapping;
 import com.hedgehogsmind.springcouch2r.beans.EnableCouch2r;
 import com.hedgehogsmind.springcouch2r.configuration.Couch2rConfiguration;
 import com.hedgehogsmind.springcouch2r.rest.problemdetail.I18nProblemDetailDescriptor;
-import com.hedgehogsmind.springcouch2r.rest.problemdetail.problems.Couch2rProblems;
 import com.hedgehogsmind.springcouch2r.workers.mapping.entity.Couch2rEntityMapping;
 import com.hedgehogsmind.springcouch2r.workers.mapping.Couch2rMappedResource;
 import org.json.JSONArray;
@@ -21,9 +20,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.web.servlet.HandlerExecutionChain;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -36,8 +37,8 @@ import java.util.Optional;
 
 import static org.mockito.Mockito.*;
 
-@DataJpaTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@SpringBootTest
 public abstract class Couch2rIntegrationTestBase {
 
     @SpringBootApplication(scanBasePackageClasses = Couch2rIntegrationTestBase.class)
@@ -45,6 +46,7 @@ public abstract class Couch2rIntegrationTestBase {
     @EnableCouch2r
     @Import(Config.class)
     @EntityScan(basePackageClasses = Couch2rIntegrationTestBase.class)
+    @EnableWebMvc
     public static class App {
     }
 
