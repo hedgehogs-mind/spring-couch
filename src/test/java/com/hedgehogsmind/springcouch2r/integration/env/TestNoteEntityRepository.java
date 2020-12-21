@@ -1,4 +1,4 @@
-package com.hedgehogsmind.springcouch2r.workers.mapping.integration.env;
+package com.hedgehogsmind.springcouch2r.integration.env;
 
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;

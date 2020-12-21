@@ -1,10 +1,10 @@
-package com.hedgehogsmind.springcouch2r.workers.mapping.integration.tests;
+package com.hedgehogsmind.springcouch2r.integration.tests;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hedgehogsmind.springcouch2r.rest.problemdetail.problems.Couch2rProblems;
-import com.hedgehogsmind.springcouch2r.workers.mapping.integration.Couch2rIntegrationTestBase;
-import com.hedgehogsmind.springcouch2r.workers.mapping.integration.env.TestNoteEntity;
-import com.hedgehogsmind.springcouch2r.workers.mapping.integration.env.TestNoteEntityRepository;
+import com.hedgehogsmind.springcouch2r.integration.Couch2rIntegrationTestBase;
+import com.hedgehogsmind.springcouch2r.integration.env.TestNoteEntity;
+import com.hedgehogsmind.springcouch2r.integration.env.TestNoteEntityRepository;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterEach;
@@ -47,8 +47,7 @@ public class Couch2rCrudMethodsTest extends Couch2rIntegrationTestBase {
 
     @Test
     public void testGetAll() throws JsonProcessingException  {
-        perform(mockRequest("GET", getNoteBasePath()));
-        final JSONArray response = getResponseJsonArray();
+        final JSONArray response = getWithJsonArrayResponse(getNoteBasePath());
 
         Assertions.assertEquals(persistedTestNotes.size(), response.length());
 
@@ -66,24 +65,24 @@ public class Couch2rCrudMethodsTest extends Couch2rIntegrationTestBase {
     @Test
     public void testGetOne() throws JsonProcessingException {
         final long noteId = persistedTestNotes.get(0).id;
-        perform(mockRequest("GET", getNoteBasePath()+noteId));
+        final String response = get(getNoteBasePath()+noteId);
 
-        final TestNoteEntity note = core.getCouch2rObjectMapper().readValue(getResponseBody(), TestNoteEntity.class);
+        final TestNoteEntity note = core.getCouch2rObjectMapper().readValue(response, TestNoteEntity.class);
 
         Assertions.assertEquals(persistedTestNotes.get(0), note);
     }
 
     @Test
     public void testGetWrongIdType() {
-        perform(mockRequest("GET", getNoteBasePath()+"abc"));
-        assertProblemDetailGiven(Couch2rProblems.WRONG_ID_TYPE);
+        final JSONObject response = getWithJsonObjectResponse(getNoteBasePath()+"abc");
+        assertProblemDetailGiven(Couch2rProblems.WRONG_ID_TYPE, response);
     }
 
     @Test
     public void testMethodNotKnown() {
         // under this path is (probably) never a mapping available
-        perform(mockRequest("GET", getNoteBasePath()+"1/2/3/4/5/6/7/8/9"));
-        assertProblemDetailGiven(Couch2rProblems.NOT_FOUND);
+        final JSONObject response = getWithJsonObjectResponse(getNoteBasePath()+"1/2/3/4/5/6/7/8/9");
+        assertProblemDetailGiven(Couch2rProblems.NOT_FOUND, response);
     }
 
 }
