@@ -174,14 +174,22 @@ public class Couch2rCore {
                 );
             }
 
+            // We need to create a new repository instance for the entity and
+            // apply bean processing > important for transactional proxies
+            final SimpleJpaRepository rawRepo = new SimpleJpaRepository(
+                    discoveredEntity.getEntityClass(),
+                    entityManager
+            );
+            final String newBeanName = "Couch2r-Entity-Repo-"+discoveredEntity.getEntityType().getName();
+            final SimpleJpaRepository finishedRepoBean = (SimpleJpaRepository) applicationContext
+                    .getAutowireCapableBeanFactory()
+                    .initializeBean(rawRepo, newBeanName);
+
             final Couch2rEntityMapping newEntityMapping = new Couch2rEntityMapping(
                     constructFullEntityResourcePathAndAssertNoPathClash(discoveredEntity),
                     constructEntityResourcePathAndAssertNoPathClash(discoveredEntity),
                     discoveredEntity,
-                    new SimpleJpaRepository(
-                            discoveredEntity.getEntityClass(),
-                            entityManager
-                    ),
+                    finishedRepoBean,
                     discoveredEntity.getEntityType()
             );
 

@@ -6,10 +6,7 @@ import com.hedgehogsmind.springcouch2r.beans.EnableCouch2r;
 import com.hedgehogsmind.springcouch2r.configuration.Couch2rConfiguration;
 import com.hedgehogsmind.springcouch2r.rest.problemdetail.I18nProblemDetailDescriptor;
 import com.hedgehogsmind.springcouch2r.workers.mapping.entity.Couch2rEntityMapping;
-import com.squareup.okhttp.MediaType;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.RequestBody;
+import com.squareup.okhttp.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
@@ -57,6 +54,8 @@ public abstract class Couch2rIntegrationTestBase {
     @LocalServerPort
     public int port;
 
+    protected int lastStatusCode = -1;
+
     /**
      * Checks that the {@link Couch2rCore} holds a {@link Couch2rEntityMapping}
      * for the given entity class.
@@ -86,7 +85,8 @@ public abstract class Couch2rIntegrationTestBase {
     }
 
     /**
-     * Performs a http request against the local test server.
+     * Performs a http request against the local test server. Stores status code in
+     * {@link #lastStatusCode}.
      *
      * @param path Path starting with leading slash.
      * @param method HTTP method.
@@ -114,7 +114,10 @@ public abstract class Couch2rIntegrationTestBase {
                 .build();
 
         try {
-            return new String(httpClient.newCall(request).execute().body().bytes());
+            final Response response = httpClient.newCall(request).execute();
+            lastStatusCode = response.code();
+
+            return new String(response.body().bytes());
         } catch ( IOException e ) {
             throw new RuntimeException(e);
         }

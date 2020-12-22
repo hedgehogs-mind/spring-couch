@@ -64,7 +64,7 @@ public class Couch2rEntityPostMethod extends Couch2rEntityMethod {
                 // TODO @peter better response
                 return Optional.of(Couch2rProblems.UNKNOWN_PROBLEM.toResponseEntity());
             } catch ( RuntimeException e ) {
-                // TODO @peter log or own exception
+                // TODO @peter log or own exception (peter from the future says: own runtime exception)
                 return Optional.of(Couch2rProblems.UNKNOWN_PROBLEM.toResponseEntity());
             }
 
