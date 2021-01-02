@@ -24,6 +24,7 @@ There may appear further informative attributes. This depends on the implementat
 | urn:problem-type:couch2r-wrong-id-type | 400 |  | Returned if the ID type does not match the resource ID's type.  |
 | urn:problem-type:couch2r-id-parsing-not-supported | 500 | `unsupportedType` | The Couch2r ID parser does not support parsing ID of entity's type. |
 | urn:problem-type:couch2r-not-found | 404 |  | The requested mapping does not exist or the action on the resource is not available / was not found. |
+| urn:problem-type:couch2r-invalid-data | 400 |  | Occurred most probable during a save/update (POST) action. The data can not be deserialized. |
 |  |  |  |  |
 
 

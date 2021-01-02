@@ -40,4 +40,11 @@ public final class Couch2rProblems {
             500
     );
 
+    public static final I18nProblemDetailDescriptor INVALID_DATA = new I18nProblemDetailDescriptor(
+            "couch2r-invalid-data",
+            "invalidData.title",
+            "invalidData.detail",
+            400
+    );
+
 }

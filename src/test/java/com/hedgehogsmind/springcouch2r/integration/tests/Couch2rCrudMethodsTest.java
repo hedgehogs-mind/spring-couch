@@ -2,10 +2,10 @@ package com.hedgehogsmind.springcouch2r.integration.tests;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hedgehogsmind.springcouch2r.rest.problemdetail.problems.Couch2rProblems;
 import com.hedgehogsmind.springcouch2r.integration.Couch2rIntegrationTestBase;
 import com.hedgehogsmind.springcouch2r.integration.env.TestNoteEntity;
 import com.hedgehogsmind.springcouch2r.integration.env.TestNoteEntityRepository;
+import com.hedgehogsmind.springcouch2r.rest.problemdetail.problems.Couch2rProblems;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterEach;
@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.web.client.TestRestTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -117,23 +116,73 @@ public class Couch2rCrudMethodsTest extends Couch2rIntegrationTestBase {
 
     @Test
     void testUpdatingEntityThroughPathVariableId() {
-        // simple post with id in path
-        // response = updated entity
-        Assertions.fail("TODO @peter");
+        final TestNoteEntity entity = persistedTestNotes.get(0);
+        final long countBefore = noteRepository.count();
+        final String newContent = "Totally new : "+System.currentTimeMillis();
+
+        final JSONObject response = postWithJsonObjectResponse(getNoteBasePath()+entity.id,
+                "{ \"title\": \""+entity.title+"\", \"content\": \""+newContent+"\", \"rating\": "+entity.rating+" }");
+
+        Assertions.assertEquals(countBefore, noteRepository.count(), "entity count changed");
+        Assertions.assertEquals(entity.id, response.getLong("id"));
+        Assertions.assertEquals(newContent, response.getString("content"));
+
+        final TestNoteEntity entityFetchedAfterSave = noteRepository.findById(entity.id).get();
+        Assertions.assertEquals(newContent, entityFetchedAfterSave.content);
+    }
+
+    @Test
+    void testUpdatingSubSetOfFields() {
+        final TestNoteEntity entity = persistedTestNotes.get(0);
+        final long countBefore = noteRepository.count();
+
+        final String oldTitle = entity.title;
+        final int oldRating = entity.rating;
+
+        final String newContent = "Totally new : "+System.currentTimeMillis();
+
+        final JSONObject response = postWithJsonObjectResponse(getNoteBasePath()+entity.id,
+                "{ \"content\": \""+newContent+"\" }"); // we update only one field
+
+        Assertions.assertEquals(countBefore, noteRepository.count(), "entity count changed");
+        Assertions.assertEquals(entity.id, response.getLong("id"));
+        Assertions.assertEquals(newContent, response.getString("content"));
+
+        final TestNoteEntity entityFetchedAfterSave = noteRepository.findById(entity.id).get();
+        Assertions.assertEquals(newContent, entityFetchedAfterSave.content);
+        Assertions.assertEquals(oldTitle, entityFetchedAfterSave.title);
+        Assertions.assertEquals(oldRating, entityFetchedAfterSave.rating);
     }
 
     @Test
     void testUpdatingEntityThroughIdInBody() {
-        // simple post
-        // id in body
-        // response = updated entity
-        Assertions.fail("TODO @peter");
+        final TestNoteEntity entity = persistedTestNotes.get(0);
+        final long countBefore = noteRepository.count();
+        final String newContent = "Totally new : "+System.currentTimeMillis();
+
+        final JSONObject response = postWithJsonObjectResponse(getNoteBasePath(), // important > no path variable!
+                "{ \"id\": " + entity.id + "," + // here we set id
+                        "\"title\": \""+entity.title+"\", \"content\": \""+newContent+"\", \"rating\": "+entity.rating+" }");
+
+        Assertions.assertEquals(countBefore, noteRepository.count(), "entity count changed");
+        Assertions.assertEquals(entity.id, response.getLong("id"));
+        Assertions.assertEquals(newContent, response.getString("content"));
+
+        final TestNoteEntity entityFetchedAfterSave = noteRepository.findById(entity.id).get();
+        Assertions.assertEquals(newContent, entityFetchedAfterSave.content);
     }
 
     @Test
-    void testBodyInvalid() {
-        // with this I mean > body can not be parsed as Entity instance
-        Assertions.fail("TODO @peter");
+    void testInvalidJson() {
+        final String invalidData = "content : hello";
+        final JSONObject response = postWithJsonObjectResponse(getNoteBasePath(), invalidData);
+
+        assertProblemDetailGiven(Couch2rProblems.INVALID_DATA, response);
     }
 
+    @Test
+    void testPostWrongIdType() {
+        final JSONObject response = postWithJsonObjectResponse(getNoteBasePath()+"abc", "{}");
+        assertProblemDetailGiven(Couch2rProblems.WRONG_ID_TYPE, response);
+    }
 }

@@ -2,6 +2,8 @@ package com.hedgehogsmind.springcouch2r.workers.mapping.entity.methods;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.hedgehogsmind.springcouch2r.rest.problemdetail.ProblemDetailConvertible;
 import com.hedgehogsmind.springcouch2r.rest.problemdetail.problems.Couch2rProblems;
 import com.hedgehogsmind.springcouch2r.workers.mapping.entity.Couch2rEntityMapping;
 import com.hedgehogsmind.springcouch2r.workers.mapping.entity.Couch2rEntityMethod;
@@ -37,33 +39,42 @@ public class Couch2rEntityPostMethod extends Couch2rEntityMethod {
                 request.getContentLengthLong() > 0 ) {
 
             try {
-                final String body = request.getReader().lines().collect(Collectors.joining("\n"));
-                final Object serializedData = objectMapper.readValue(body, getEntityClass());
+                // We use an ObjectReader instead of the ObjectMapper, because we may need
+                // to pass an existing entity instance for value updates
+                ObjectReader objectReader = objectMapper.readerFor(getEntityClass());
 
                 // in case we have an id, we try to parse it, check existence and store the id value in the instance
                 if ( pathVariables.length == 1 ) {
                     final Object parsedId = parseId(pathVariables[0]);
 
-                    if ( !getRepository().existsById(parsedId) ) {
+                    final Optional<Object> existingEntity = getRepository().findById(parsedId);
+
+                    if ( existingEntity.isEmpty() ) {
                         return Optional.of(Couch2rProblems.NOT_FOUND.toResponseEntity());
                     }
 
-                    setIdValue(serializedData, parsedId);
+                    // We pass the existing entity for updates to reader
+                    objectReader = objectReader.withValueToUpdate(existingEntity.get());
                 }
+
+                final String body = request.getReader().lines().collect(Collectors.joining("\n"));
+                final Object serializedData = objectReader.readValue(body);
 
                 // TODO @peter validate serializedData
 
                 final Object savedEntity = getRepository().save(serializedData);
-
                 return Optional.of(ResponseEntity.ok(savedEntity));
 
             } catch ( JsonProcessingException e ) {
-                // TODO @peter can we provide a better error message
-                return Optional.of(Couch2rProblems.UNKNOWN_PROBLEM.toResponseEntity());
+                return Optional.of(Couch2rProblems.INVALID_DATA.toResponseEntity());
+
             } catch ( IOException e ) {
                 // TODO @peter better response
                 return Optional.of(Couch2rProblems.UNKNOWN_PROBLEM.toResponseEntity());
             } catch ( RuntimeException e ) {
+                // Rethrow if exception already carries a problem detail
+                if ( e instanceof ProblemDetailConvertible ) throw e;
+
                 // TODO @peter log or own exception (peter from the future says: own runtime exception)
                 return Optional.of(Couch2rProblems.UNKNOWN_PROBLEM.toResponseEntity());
             }
