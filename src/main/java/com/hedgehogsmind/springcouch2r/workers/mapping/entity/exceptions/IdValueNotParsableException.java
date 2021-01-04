@@ -9,24 +9,28 @@ import java.util.Locale;
 /**
  * Shall be thrown whenever a String value can not be parsed as an entity's ID value.
  */
-public class Couch2rIdValueNotParsableException extends ProblemDetailConvertibleRuntimeException {
+public class IdValueNotParsableException
+        extends ProblemDetailConvertibleRuntimeException {
 
-    public Couch2rIdValueNotParsableException() {
+    public IdValueNotParsableException() {
     }
 
-    public Couch2rIdValueNotParsableException(String message) {
+    public IdValueNotParsableException(String message) {
         super(message);
     }
 
-    public Couch2rIdValueNotParsableException(String message, Throwable cause) {
+    public IdValueNotParsableException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public Couch2rIdValueNotParsableException(Throwable cause) {
+    public IdValueNotParsableException(Throwable cause) {
         super(cause);
     }
 
-    public Couch2rIdValueNotParsableException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+    public IdValueNotParsableException(String message,
+                                       Throwable cause,
+                                       boolean enableSuppression,
+                                       boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
 

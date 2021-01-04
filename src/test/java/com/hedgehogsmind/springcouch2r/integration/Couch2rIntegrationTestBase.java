@@ -5,7 +5,7 @@ import com.hedgehogsmind.springcouch2r.beans.Couch2rCore;
 import com.hedgehogsmind.springcouch2r.beans.EnableCouch2r;
 import com.hedgehogsmind.springcouch2r.configuration.Couch2rConfiguration;
 import com.hedgehogsmind.springcouch2r.rest.problemdetail.I18nProblemDetailDescriptor;
-import com.hedgehogsmind.springcouch2r.workers.mapping.entity.Couch2rEntityMapping;
+import com.hedgehogsmind.springcouch2r.workers.mapping.entity.MappedEntityResource;
 import com.squareup.okhttp.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -57,16 +57,16 @@ public abstract class Couch2rIntegrationTestBase {
     protected int lastStatusCode = -1;
 
     /**
-     * Checks that the {@link Couch2rCore} holds a {@link Couch2rEntityMapping}
+     * Checks that the {@link Couch2rCore} holds a {@link MappedEntityResource}.
      * for the given entity class.
      *
      * @param entityClass Entity class to look for.
      */
     protected void assertEntityMappingExists(final Class<?> entityClass) {
-        final Optional<Couch2rEntityMapping> entityMapping = core.getCouch2rMappings()
+        final Optional<MappedEntityResource> entityMapping = core.getMappedResources()
                 .stream()
-                .filter(m -> m instanceof Couch2rEntityMapping)
-                .map(m -> (Couch2rEntityMapping) m)
+                .filter(m -> m instanceof MappedEntityResource)
+                .map(m -> (MappedEntityResource) m)
                 .filter(em -> em.getEntityType().getJavaType().equals(entityClass))
                 .findAny();
 

@@ -1,7 +1,9 @@
 package com.hedgehogsmind.springcouch2r.demo.entities;
 
 import com.hedgehogsmind.springcouch2r.annotations.Couch2r;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

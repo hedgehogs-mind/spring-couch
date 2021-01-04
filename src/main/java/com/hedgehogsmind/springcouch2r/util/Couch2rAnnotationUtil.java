@@ -1,8 +1,6 @@
 package com.hedgehogsmind.springcouch2r.util;
 
-import com.hedgehogsmind.springcouch2r.annotations.Couch2r;
 import com.hedgehogsmind.springcouch2r.annotations.Couch2rModifierAnnotation;
-import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.annotation.MergedAnnotation;
 import org.springframework.core.annotation.MergedAnnotations;
 

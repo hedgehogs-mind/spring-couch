@@ -5,7 +5,6 @@ import com.hedgehogsmind.springcouch2r.rest.problemdetail.problems.Couch2rProble
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.io.BufferedReader;
 import java.net.URL;
 import java.util.List;
 import java.util.Scanner;

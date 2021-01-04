@@ -1,7 +1,5 @@
 package com.hedgehogsmind.springcouch2r.rest.problemdetail;
 
-import com.hedgehogsmind.springcouch2r.rest.ResponseEntityConvertible;
-
 import java.net.URI;
 import java.util.Locale;
 import java.util.Objects;

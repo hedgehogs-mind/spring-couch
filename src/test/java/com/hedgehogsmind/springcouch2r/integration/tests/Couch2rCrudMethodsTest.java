@@ -84,7 +84,7 @@ public class Couch2rCrudMethodsTest extends Couch2rIntegrationTestBase {
     public void testMethodNotKnown() {
         // under this path is (probably) never a mapping available
         final JSONObject response = getWithJsonObjectResponse(getNoteBasePath()+"1/2/3/4/5/6/7/8/9");
-        assertProblemDetailGiven(Couch2rProblems.NOT_FOUND, response);
+        Assertions.assertEquals(404, lastStatusCode);
     }
 
     @Test
