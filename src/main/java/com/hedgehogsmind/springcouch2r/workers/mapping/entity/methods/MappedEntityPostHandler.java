@@ -118,13 +118,7 @@ public class MappedEntityPostHandler
             return Couch2rProblems.INVALID_DATA.toResponseEntity();
 
         } catch ( IOException e ) {
-            // TODO @peter better response
-            return Couch2rProblems.UNKNOWN_PROBLEM.toResponseEntity();
-        } catch ( RuntimeException e ) {
-            // Rethrow if exception already carries a problem detail
-            if ( e instanceof ProblemDetailConvertible ) throw e;
-
-            // TODO @peter log or own exception (peter from the future says: own runtime exception)
+            // TODO @peter better response >> maybe own exception so that error will be logged?
             return Couch2rProblems.UNKNOWN_PROBLEM.toResponseEntity();
         }
     }

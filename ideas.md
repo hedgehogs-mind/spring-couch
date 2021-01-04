@@ -1,3 +1,4 @@
+- rename everything to CouchRest
 - Couch2rHandlerMapping
   - Logging
   - WebMvcConfigurationSupport
@@ -6,13 +7,10 @@
 
 - delete method
 - crud doc
-- modify system
-  - Couch2rHandlerMapping shall return low level methods > this allows `/` to be used as base path
   
 - must the base path start with a slash?
 - could the base path be "/" ?
 
-- tests for post method
 - entity method > cache id field and getter and setter
 
 - mapping test for both
@@ -27,6 +25,8 @@
 
 - delete
 - update
+  - via POST: DONE
+  - via PUT too?
 
 # More
 

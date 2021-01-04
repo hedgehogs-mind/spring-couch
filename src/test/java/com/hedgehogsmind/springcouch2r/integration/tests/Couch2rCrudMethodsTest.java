@@ -50,6 +50,7 @@ public class Couch2rCrudMethodsTest extends Couch2rIntegrationTestBase {
     @Test
     public void testGetAll() throws JsonProcessingException  {
         final JSONArray response = getWithJsonArrayResponse(getNoteBasePath());
+        assertStatusCode(200);
 
         Assertions.assertEquals(persistedTestNotes.size(), response.length());
 
@@ -68,6 +69,7 @@ public class Couch2rCrudMethodsTest extends Couch2rIntegrationTestBase {
     public void testGetOne() throws JsonProcessingException {
         final long noteId = persistedTestNotes.get(0).id;
         final String response = get(getNoteBasePath()+noteId);
+        assertStatusCode(200);
 
         final TestNoteEntity note = core.getCouch2rObjectMapper().readValue(response, TestNoteEntity.class);
 
@@ -84,7 +86,8 @@ public class Couch2rCrudMethodsTest extends Couch2rIntegrationTestBase {
     public void testMethodNotKnown() {
         // under this path is (probably) never a mapping available
         final JSONObject response = getWithJsonObjectResponse(getNoteBasePath()+"1/2/3/4/5/6/7/8/9");
-        Assertions.assertEquals(404, lastStatusCode);
+
+        assertStatusCode(404);
     }
 
     @Test
@@ -95,6 +98,8 @@ public class Couch2rCrudMethodsTest extends Couch2rIntegrationTestBase {
                 getNoteBasePath(),
                 "{ \"title\": \"123\", \"content\": \"456\", \"rating\": 789 }"
         );
+
+        assertStatusCode(200);
 
         Assertions.assertEquals(200, lastStatusCode, "failed");
 
@@ -123,6 +128,8 @@ public class Couch2rCrudMethodsTest extends Couch2rIntegrationTestBase {
         final JSONObject response = postWithJsonObjectResponse(getNoteBasePath()+entity.id,
                 "{ \"title\": \""+entity.title+"\", \"content\": \""+newContent+"\", \"rating\": "+entity.rating+" }");
 
+        assertStatusCode(200);
+
         Assertions.assertEquals(countBefore, noteRepository.count(), "entity count changed");
         Assertions.assertEquals(entity.id, response.getLong("id"));
         Assertions.assertEquals(newContent, response.getString("content"));
@@ -144,6 +151,8 @@ public class Couch2rCrudMethodsTest extends Couch2rIntegrationTestBase {
         final JSONObject response = postWithJsonObjectResponse(getNoteBasePath()+entity.id,
                 "{ \"content\": \""+newContent+"\" }"); // we update only one field
 
+        assertStatusCode(200);
+
         Assertions.assertEquals(countBefore, noteRepository.count(), "entity count changed");
         Assertions.assertEquals(entity.id, response.getLong("id"));
         Assertions.assertEquals(newContent, response.getString("content"));
@@ -164,6 +173,8 @@ public class Couch2rCrudMethodsTest extends Couch2rIntegrationTestBase {
                 "{ \"id\": " + entity.id + "," + // here we set id
                         "\"title\": \""+entity.title+"\", \"content\": \""+newContent+"\", \"rating\": "+entity.rating+" }");
 
+        assertStatusCode(200);
+
         Assertions.assertEquals(countBefore, noteRepository.count(), "entity count changed");
         Assertions.assertEquals(entity.id, response.getLong("id"));
         Assertions.assertEquals(newContent, response.getString("content"));
@@ -176,13 +187,36 @@ public class Couch2rCrudMethodsTest extends Couch2rIntegrationTestBase {
     void testInvalidJson() {
         final String invalidData = "content : hello";
         final JSONObject response = postWithJsonObjectResponse(getNoteBasePath(), invalidData);
-
         assertProblemDetailGiven(Couch2rProblems.INVALID_DATA, response);
     }
 
     @Test
     void testPostWrongIdType() {
         final JSONObject response = postWithJsonObjectResponse(getNoteBasePath()+"abc", "{}");
+        assertProblemDetailGiven(Couch2rProblems.WRONG_ID_TYPE, response);
+    }
+
+    @Test
+    void testDeleteNotExisting() {
+        final JSONObject response = deleteWithJsonObjectResponse(getNoteBasePath()+Long.MAX_VALUE); // very large id which probably does not exist
+        assertProblemDetailGiven(Couch2rProblems.NOT_FOUND, response);
+    }
+
+    @Test
+    void testDeleteSuccess() {
+        final long entityId = persistedTestNotes.get(0).id;
+        final long countBefore = noteRepository.count();
+
+        delete(getNoteBasePath()+entityId);
+        assertStatusCode(200);
+
+        Assertions.assertEquals(countBefore-1, noteRepository.count(), "Repo entity count did not decrease");
+        Assertions.assertFalse(noteRepository.existsById(entityId), "Entity could still be found through repo by id");
+    }
+
+    @Test
+    void testDeleteWrongIdType() {
+        final JSONObject response = deleteWithJsonObjectResponse(getNoteBasePath()+"abc");
         assertProblemDetailGiven(Couch2rProblems.WRONG_ID_TYPE, response);
     }
 }

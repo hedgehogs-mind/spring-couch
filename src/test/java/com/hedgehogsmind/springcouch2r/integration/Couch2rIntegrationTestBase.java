@@ -187,9 +187,29 @@ public abstract class Couch2rIntegrationTestBase {
     }
 
     /**
+     * Convenience method. Calls {@link #perform(String, String, String)} with method DELETE and no body.
+     *
+     * @param path Path to perform delete call against.
+     * @return Response body as string.
+     */
+    protected String delete(final String path) {
+        return perform(path, "DELETE", null);
+    }
+
+    /**
+     * Sames as {@link #delete(String)}, but tries to parse response body as JSON.
+     * @param path Path to perform delete call against.
+     * @return Response as JSON object.
+     */
+    protected JSONObject deleteWithJsonObjectResponse(final String path) {
+        return new JSONObject(delete(path));
+    }
+
+    /**
      * Checks that the given response object carries a
      * {@link com.hedgehogsmind.springcouch2r.rest.problemdetail.ProblemDetail} with a type
-     * equal to the one held by the given descriptor.
+     * equal to the one held by the given descriptor. Also checks last status code to match the one
+     * held in the descriptor.
      *
      * @param descriptor Descriptor to get expected ProblemDetail type from.
      * @param response Response to check for ProblemDetail and its type.
@@ -198,7 +218,16 @@ public abstract class Couch2rIntegrationTestBase {
                                             final JSONObject response) {
 
         Assertions.assertTrue(response.has("type"));
+        assertStatusCode(descriptor.getStatus());
         Assertions.assertEquals(descriptor.getType().toString(), response.getString("type"));
+    }
+
+    /**
+     * Checks that {@link #lastStatusCode} mathches the given one.
+     * @param expected Expected status code.
+     */
+    protected void assertStatusCode(int expected) {
+        Assertions.assertEquals(expected, lastStatusCode, "Status codes do not match");
     }
 
 }

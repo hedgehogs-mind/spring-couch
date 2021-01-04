@@ -3,6 +3,7 @@ package com.hedgehogsmind.springcouch2r.workers.mapping.entity;
 import com.hedgehogsmind.springcouch2r.data.discovery.Couch2rDiscoveredUnit;
 import com.hedgehogsmind.springcouch2r.workers.mapping.MappedResource;
 import com.hedgehogsmind.springcouch2r.workers.mapping.MappingHandler;
+import com.hedgehogsmind.springcouch2r.workers.mapping.entity.methods.MappedEntityDeleteHandler;
 import com.hedgehogsmind.springcouch2r.workers.mapping.entity.methods.MappedEntityGetHandler;
 import com.hedgehogsmind.springcouch2r.workers.mapping.entity.methods.MappedEntityPostHandler;
 import org.springframework.data.repository.CrudRepository;
@@ -46,7 +47,8 @@ public class MappedEntityResource
     protected List<MappingHandler> createSubMappingHandlers() {
         return List.of(
                 new MappedEntityGetHandler(this),
-                new MappedEntityPostHandler(this)
+                new MappedEntityPostHandler(this),
+                new MappedEntityDeleteHandler(this)
         );
     }
 
