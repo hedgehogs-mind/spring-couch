@@ -1,11 +1,10 @@
-- rename everything to CouchRest
+
 - CouchRestHandlerMapping
   - Logging
   - WebMvcConfigurationSupport
     - make optional > fetch interceptors only if present 
     - __otherwise WARNING__ 
-
-- delete method
+  
 - crud doc
   
 - must the base path start with a slash?
@@ -20,13 +19,6 @@
   - especially unhandled exceptions
   - logging of problem details > really ? isn't this overhead?
 - json batch
- 
-# Entity Mappings
-
-- delete
-- update
-  - via POST: DONE
-  - via PUT too?
 
 # More
 
