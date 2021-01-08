@@ -18,6 +18,9 @@ import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
+import org.springframework.expression.EvaluationContext;
+import org.springframework.expression.Expression;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
 
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
@@ -40,6 +43,10 @@ public class CouchRestCore {
     private CouchRestDiscovery couchRestDiscovery;
 
     private Set<MappedResource> mappedResources;
+
+    private SpelExpressionParser couchRestSpelExpressionParser;
+
+    private Expression couchRestBaseSecurityRule;
 
     /**
      * Dependency injection constructor.
@@ -64,12 +71,27 @@ public class CouchRestCore {
      */
     @PostConstruct
     public void setup() {
+        init();
+
         fetchCouchRestConfiguration();
         applyCouchRestConfiguration();
 
         this.couchRestDiscovery = new CouchRestDiscovery(applicationContext, entityManager);
 
         setupMappings();
+    }
+
+    /**
+     * <p>
+     *     Initializes:
+     *     <ul>
+     *         <li>{@link #getCouchRestSpelExpressionParser()}</li>
+     *     </ul>
+     * </p>
+     *
+     */
+    protected void init() {
+        this.couchRestSpelExpressionParser = new SpelExpressionParser();
     }
 
     /**
@@ -112,6 +134,17 @@ public class CouchRestCore {
         } else {
             this.couchRestObjectMapper = new ObjectMapper();
         }
+    }
+
+    /**
+     * Tries to parse base security rule and checks if it returns a boolean value.
+     */
+    protected void setupBaseSecurityRule() {
+        couchRestBaseSecurityRule = couchRestSpelExpressionParser.parseExpression(
+                couchRestConfiguration.getBaseSecurityRule()
+        );
+
+        // TODO @peter test boolean result
     }
 
     /**
@@ -251,4 +284,11 @@ public class CouchRestCore {
         return mappedResources;
     }
 
+    public SpelExpressionParser getCouchRestSpelExpressionParser() {
+        return couchRestSpelExpressionParser;
+    }
+
+    public Expression getCouchRestBaseSecurityRule() {
+        return couchRestBaseSecurityRule;
+    }
 }

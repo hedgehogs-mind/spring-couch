@@ -19,4 +19,9 @@ public class MyCouchRestConfiguration
     public Optional<ObjectMapper> getCouchRestObjectMapper() {
         return Optional.empty();
     }
+
+    @Override
+    public String getBaseSecurityRule() {
+        return "true";
+    }
 }

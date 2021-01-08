@@ -1,3 +1,5 @@
+- we needs securityexpressionhandlers https://stackoverflow.com/questions/17263506/how-to-evaluate-a-spel-security-expression-in-custom-java-code
+
 
 - CouchRestHandlerMapping
   - Logging
