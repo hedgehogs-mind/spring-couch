@@ -1,6 +1,6 @@
 # REST Problem Detail
 
-Couch2r used RFC 7087 ProblemDetails to inform clients about errors or invalid requests. Each ProblemDetail response
+CouchRest used RFC 7087 ProblemDetails to inform clients about errors or invalid requests. Each ProblemDetail response
 (within this document only "response") has the following skeleton:
 
 ```
@@ -15,16 +15,15 @@ Couch2r used RFC 7087 ProblemDetails to inform clients about errors or invalid r
 
 There may appear further informative attributes. This depends on the implementation and problem scenario/type.
 
-# Types used in Couch2r
+# Types used in CouchRest
 
 |type|status|additional attributes (not mandatory)|explanation|
 |---|---|---|---|
-| urn:problem-type:couch2r-unknown-problem | 500 |  | Returned if an error which can not be classified or handled occurred. |
-| urn:problem-type:couch2r-too-many-path-variables | 400 |  | Returned if there are too many path variables (e.g. "/couch2r/entity/1 **/tooMuch/vars**") |
-| urn:problem-type:couch2r-wrong-id-type | 400 |  | Returned if the ID type does not match the resource ID's type.  |
-| urn:problem-type:couch2r-id-parsing-not-supported | 500 | `unsupportedType` | The Couch2r ID parser does not support parsing ID of entity's type. |
-| urn:problem-type:couch2r-not-found | 404 |  | The requested mapping does not exist or the action on the resource is not available / was not found. |
-| urn:problem-type:couch2r-invalid-data | 400 |  | Occurred most probable during a save/update (POST) action. The data can not be deserialized. |
+| urn:problem-type:couch-rest-unknown-problem | 500 |  | Returned if an error which can not be classified or handled occurred. |
+| urn:problem-type:couch-rest-wrong-id-type | 400 |  | Returned if the ID type does not match the resource ID's type.  |
+| urn:problem-type:couch-rest-id-parsing-not-supported | 500 | `unsupportedType` | The CouchRest ID parser does not support parsing ID of entity's type. |
+| urn:problem-type:couch-rest-not-found | 404 |  | The requested mapping does not exist or the action on the resource is not available / was not found. |
+| urn:problem-type:couch-rest-invalid-data | 400 |  | Occurred most probable during a save/update (POST) action. The data can not be deserialized. |
 |  |  |  |  |
 
 

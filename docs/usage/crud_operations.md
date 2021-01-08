@@ -1,17 +1,17 @@
 # CRUD operations
 
-This documentation page explains the basic CRUD operations Couch2r makes available. CRUD stands
+This documentation page explains the basic CRUD operations CouchRest makes available. CRUD stands
 for **C**reate, **R**ead, **U**pdate and **D**elete.
 
 # Assumptions
 
-In all examples we assume, that you configured your __Couch2r BasePath__ to be `/api/`!
+In all examples we assume, that you configured your __CouchRest BasePath__ to be `/api/`!
 
-Furthermore, there is the following entity, which has been published via `@Couch2r`:
+Furthermore, there is the following entity, which has been published via `@CouchRest`:
 
 ```
 @Entity
-@Couch2r
+@CouchRest
 public class Tree {
     
 }

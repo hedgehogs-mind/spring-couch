@@ -1,5 +1,5 @@
 - rename everything to CouchRest
-- Couch2rHandlerMapping
+- CouchRestHandlerMapping
   - Logging
   - WebMvcConfigurationSupport
     - make optional > fetch interceptors only if present 
@@ -14,8 +14,8 @@
 - entity method > cache id field and getter and setter
 
 - mapping test for both
-  - entity with @Couch2r and
-  - repo with @Couch2r
+  - entity with @CouchRest and
+  - repo with @CouchRest
 - logging
   - especially unhandled exceptions
   - logging of problem details > really ? isn't this overhead?
@@ -47,8 +47,8 @@ Maybe global exception handler too?
 
 # Embed Services and Repo methods
 
-By annotating Couch2r Element, you can also publish public methods
-via Couch2r.
+By annotating CouchRest Element, you can also publish public methods
+via CouchRest.
 
 ```
 @Service
@@ -60,14 +60,14 @@ class ExampleService {
 
 }
 
-@Couch2r(
+@CouchRest(
     ...
     publishRepositoryMethods = true,
     publishRepositoryMethodsExplicitOnes = true
 )
-@Couch2rPublish(
+@CouchRestPublish(
     beanClass = ExampleService.class,
-    onlyExplicitOnes = false // if true, use @Couch2rPublished
+    onlyExplicitOnes = false // if true, use @CouchRestPublished
 )
 interface EntityRepo extends CrudRepository {
 }
