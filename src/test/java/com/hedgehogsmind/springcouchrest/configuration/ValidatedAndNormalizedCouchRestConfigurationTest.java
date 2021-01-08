@@ -18,6 +18,11 @@ public class ValidatedAndNormalizedCouchRestConfigurationTest {
         public Optional<ObjectMapper> getCouchRestObjectMapper() {
             return Optional.empty();
         }
+
+        @Override
+        public String getBaseSecurityRule() {
+            return "true";
+        }
     }
 
     @Test

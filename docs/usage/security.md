@@ -10,6 +10,14 @@ CouchRest needs a base security definition.
 Generally: In case a request will be rejected by any security rule we explain in this document, 
 a 403 response will be sent to the client.
 
+## Rule interpretation
+
+All security rules must be written as SpringEL expression. They shall produce a boolean result.
+The result will be interpreted as follows:
+
+- `true`: Access check succeeded, and the request will be handled.
+- `false`: Access check failed, and the request will be rejected.
+
 ## Base Security
 
 You can specify a global security rule for all CouchRest endpoints, in case no more detailed

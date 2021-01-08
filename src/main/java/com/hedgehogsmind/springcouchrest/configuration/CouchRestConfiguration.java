@@ -22,4 +22,12 @@ public interface CouchRestConfiguration {
      */
     Optional<ObjectMapper> getCouchRestObjectMapper();
 
+    /**
+     * Shall return the global base security rule. It will be applied to all endpoints which
+     * have no own overriding security rules. The rule must be defined as a SpringEL expression.
+     *
+     * @return Base security rule as SpringEL expression.
+     */
+    String getBaseSecurityRule();
+
 }

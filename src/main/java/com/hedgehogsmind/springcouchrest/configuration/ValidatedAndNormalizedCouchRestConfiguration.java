@@ -15,6 +15,8 @@ public class ValidatedAndNormalizedCouchRestConfiguration
 
     private final Optional<ObjectMapper> objectMapper;
 
+    private final String baseSecurityRule;
+
     /**
      * Copies data and normalizes it if necessary.
      * @param original Original configuration.
@@ -22,6 +24,7 @@ public class ValidatedAndNormalizedCouchRestConfiguration
     public ValidatedAndNormalizedCouchRestConfiguration(final CouchRestConfiguration original) {
         this.basePath = validateAndNormalizeBasePath(original.getCouchRestBasePath());
         this.objectMapper = original.getCouchRestObjectMapper();
+        this.baseSecurityRule = validateBaseSecurityRule(original.getBaseSecurityRule());
     }
 
     /**
@@ -38,6 +41,19 @@ public class ValidatedAndNormalizedCouchRestConfiguration
         return PathUtil.removeMultipleSlashes(basePath);
     }
 
+    /**
+     * Checks that the given rule is not empty.
+     * @param baseSecurityRule Rule to check.
+     * @return Rule.
+     */
+    public String validateBaseSecurityRule(final String baseSecurityRule) {
+        if ( baseSecurityRule == null || baseSecurityRule.isBlank() ) {
+            throw new IllegalArgumentException("CouchRest baseSecurityRule must not be empty");
+        }
+
+        return baseSecurityRule;
+    }
+
     @Override
     public String getCouchRestBasePath() {
         return basePath;
@@ -47,4 +63,10 @@ public class ValidatedAndNormalizedCouchRestConfiguration
     public Optional<ObjectMapper> getCouchRestObjectMapper() {
         return objectMapper;
     }
+
+    @Override
+    public String getBaseSecurityRule() {
+        return baseSecurityRule;
+    }
+
 }

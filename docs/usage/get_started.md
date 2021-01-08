@@ -148,3 +148,4 @@ public class Address {
 Go ahead and read the following documentation pages, to better understand, what CouchRest is capable of:
 
 - [CRUD operations of Entity](crud_operations.md)
+- [Security](security.md)
