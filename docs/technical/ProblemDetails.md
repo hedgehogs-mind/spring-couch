@@ -24,6 +24,7 @@ There may appear further informative attributes. This depends on the implementat
 | urn:problem-type:couch-rest-id-parsing-not-supported | 500 | `unsupportedType` | The CouchRest ID parser does not support parsing ID of entity's type. |
 | urn:problem-type:couch-rest-not-found | 404 |  | The requested mapping does not exist or the action on the resource is not available / was not found. |
 | urn:problem-type:couch-rest-invalid-data | 400 |  | Occurred most probable during a save/update (POST) action. The data can not be deserialized. |
+| urn:problem-type:couch-rest-forbidden | 403 |  | The caller does not have the necessary security privileges. |
 |  |  |  |  |
 
 

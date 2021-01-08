@@ -40,4 +40,11 @@ public final class CouchRestProblems {
             400
     );
 
+    public static final I18nProblemDetailDescriptor FORBIDDEN = new I18nProblemDetailDescriptor(
+            "couch-rest-forbidden",
+            "forbidden.title",
+            "forbidden.detail",
+            403
+    );
+
 }
