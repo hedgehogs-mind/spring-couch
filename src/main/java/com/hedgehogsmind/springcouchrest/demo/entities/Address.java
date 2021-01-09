@@ -1,6 +1,7 @@
 package com.hedgehogsmind.springcouchrest.demo.entities;
 
 import com.hedgehogsmind.springcouchrest.annotations.CouchRest;
+import com.hedgehogsmind.springcouchrest.annotations.security.CrudSecurity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
@@ -10,8 +11,9 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
-@Entity
 @CouchRest
+@CrudSecurity(read = "permitAll()", saveUpdate = "permitAll()", delete = "permitAll()")
+@Entity
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

@@ -16,7 +16,7 @@ import javax.persistence.EntityManager;
 import java.util.Optional;
 
 @DataJpaTest
-public class CpuchRestCoreBaseSecurityRuleNoBooleanValue {
+public class CouchRestCoreBaseSecurityRuleNoBooleanValueTest {
 
     @SpringBootApplication(exclude = {CouchRestCore.class, CouchRestConfiguration.class})
     public static class Config {

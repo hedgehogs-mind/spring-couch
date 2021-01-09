@@ -24,11 +24,21 @@ public interface CouchRestConfiguration {
 
     /**
      * Shall return the global base security rule. It will be applied to all endpoints which
-     * have no own overriding security rules. The rule must be defined as a SpringEL expression.
+     * before evaluating any endpoint specific rules. You can use most of the Spring Security SpringEL
+     * expressions.
      *
      * @return Base security rule as SpringEL expression.
      */
     String getBaseSecurityRule();
+
+    /**
+     * Shall return the default security rule that will be used on the endpoint level for all endpoints
+     * where no separate security rule has been declared by you. Use a SpringEL expression. You can use
+     * most of the Spring Security SpringEL expressions.
+     *
+     * @return Default endpoint security rule as SpringEL expression.
+     */
+    String getDefaultEndpointSecurityRule();
 
     /**
      * You may want to provide an own root object for SpringEL expression evaluation.

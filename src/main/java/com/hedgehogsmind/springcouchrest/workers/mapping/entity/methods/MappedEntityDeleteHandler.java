@@ -65,6 +65,8 @@ public class MappedEntityDeleteHandler extends MappedEntitySubHandlerBase {
                                  String[] pathVariablesAfterResource,
                                  Map<String, String[]> queryParameters) {
 
+        getSecurityHandler().assertDeleteAccess();
+
         final Object parsedId = parseId(pathVariablesAfterResource[0]);
 
         if ( !getRepository().existsById(parsedId) ) return CouchRestProblems.NOT_FOUND.toResponseEntity();

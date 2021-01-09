@@ -50,6 +50,8 @@ public class CouchRestCore {
 
     private Expression couchRestBaseSecurityRule;
 
+    private Expression couchRestDefaultEndpointSecurityRule;
+
     /**
      * Dependency injection constructor.
      *
@@ -123,12 +125,14 @@ public class CouchRestCore {
      *     <li>{@link #setupObjectMapper()}</li>
      *     <li>{@link #setupSpringElEvaluationRootObject()}</li>
      *     <li>{@link #setupBaseSecurityRule()}</li>
+     *     <li>{@link #setupDefaultSecurityRule()}</li>
      * </ul>
      */
     protected void applyCouchRestConfiguration() {
         setupObjectMapper();
         setupSpringElEvaluationRootObject();
         setupBaseSecurityRule();
+        setupDefaultSecurityRule();
     }
 
     /**
@@ -178,6 +182,25 @@ public class CouchRestCore {
         }
     }
 
+
+    /**
+     * Tries to parse default endpoint security rule and checks if it returns a boolean value.
+     */
+    protected void setupDefaultSecurityRule() {
+        couchRestDefaultEndpointSecurityRule = couchRestSpelExpressionParser.parseExpression(
+                couchRestConfiguration.getDefaultEndpointSecurityRule()
+        );
+
+        final Object testResult = this.couchRestDefaultEndpointSecurityRule.getValue(couchRestSpelEvaluationContext);
+
+        if ( !(testResult instanceof Boolean) ) {
+            throw new DefaultSecurityRuleDoesNotReturnBooleanValueException(
+                    "Default endpoint security rule did not return boolean result. Instead it was of type: "+
+                            (testResult != null ? testResult.getClass() : "null")
+            );
+        }
+    }
+
     /**
      * Creates new mapping set and calls {@link #setupRepositoryMappings()} and
      * {@link #setupEntityMappings()}.
@@ -199,6 +222,7 @@ public class CouchRestCore {
     protected void setupRepositoryMappings() {
         couchRestDiscovery.getDiscoveredCrudRepositories().forEach(discoveredRepo -> {
             final MappedEntityResource newRepositoryMapping = new MappedEntityResource(
+                    this,
                     discoveredRepo,
                     constructFullEntityResourcePathAndAssertNoPathClash(discoveredRepo),
                     discoveredRepo.getEntityType(),
@@ -251,6 +275,7 @@ public class CouchRestCore {
                     .initializeBean(rawRepo, newBeanName);
 
             final MappedEntityResource newEntityMapping = new MappedEntityResource(
+                    this,
                     discoveredEntity,
                     constructFullEntityResourcePathAndAssertNoPathClash(discoveredEntity),
                     discoveredEntity.getEntityType(),
@@ -303,6 +328,59 @@ public class CouchRestCore {
                 .findAny();
     }
 
+    /**
+     * Convenience method. Parses given expression using {@link #getCouchRestSpelExpressionParser()}.
+     *
+     * @param expression Expression.
+     * @return Parsed expression.
+     */
+    public Expression parseSpelExpression(final String expression) {
+        return this.couchRestSpelExpressionParser.parseExpression(expression);
+    }
+
+    /**
+     * Evaluates expression using {@link #getCouchRestSpelEvaluationContext()} as context.
+     *
+     * @param expression Expression to evaluate.
+     * @return Returned value.
+     */
+    public Object evaluateExpression(final Expression expression) {
+        return expression.getValue(couchRestSpelEvaluationContext);
+    }
+
+    /**
+     * Evaluates expression using {@link #getCouchRestSpelEvaluationContext()} as context
+     * and returns instance of type returnType.
+     *
+     * @param expression Expression to evaluate.
+     * @param returnType Expected return type.
+     * @param <R> Type of return type.
+     * @return Return value.
+     */
+    public <R> R evaluateExpression(final Expression expression, final Class<? extends R> returnType) {
+        return expression.getValue(couchRestSpelEvaluationContext, returnType);
+    }
+
+    /**
+     * Convenience method. Calls {@link #evaluateExpression(Expression, Class)} with
+     * {@link #getCouchRestBaseSecurityRule()} as expression.
+     *
+     * @return Result of base security rule.
+     */
+    public boolean evaluateBaseSecurityRule() {
+        return evaluateExpression(couchRestBaseSecurityRule, Boolean.class);
+    }
+
+    /**
+     * Convenience method. Calls {@link #evaluateExpression(Expression, Class)} with
+     * {@link #getCouchRestDefaultEndpointSecurityRule()} as expression.
+     *
+     * @return Result of default endpoint security rule.
+     */
+    public boolean evaluateDefaultEndpointSecurityRule() {
+        return evaluateExpression(couchRestDefaultEndpointSecurityRule, Boolean.class);
+    }
+
     public ObjectMapper getCouchRestObjectMapper() {
         return couchRestObjectMapper;
     }
@@ -321,6 +399,10 @@ public class CouchRestCore {
 
     public Expression getCouchRestBaseSecurityRule() {
         return couchRestBaseSecurityRule;
+    }
+
+    public Expression getCouchRestDefaultEndpointSecurityRule() {
+        return couchRestDefaultEndpointSecurityRule;
     }
 
     public Object getCouchRestSpelEvaluationRootObject() {

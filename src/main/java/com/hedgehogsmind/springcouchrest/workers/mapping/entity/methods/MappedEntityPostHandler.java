@@ -86,6 +86,8 @@ public class MappedEntityPostHandler
                                  String[] pathVariablesAfterResource,
                                  Map<String, String[]> queryParameters) {
 
+        getSecurityHandler().assertSaveUpdateAccess();
+
         try {
             // We use an ObjectReader instead of the ObjectMapper, because we may need
             // to pass an existing entity instance for value updates

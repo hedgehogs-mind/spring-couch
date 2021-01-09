@@ -1,6 +1,7 @@
 package com.hedgehogsmind.springcouchrest.workers.mapping;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hedgehogsmind.springcouchrest.beans.CouchRestCore;
 import com.hedgehogsmind.springcouchrest.data.discovery.DiscoveredUnit;
 import com.hedgehogsmind.springcouchrest.util.RequestUtil;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +29,8 @@ import java.util.Optional;
 public abstract class MappedResource
         implements MappingHandler {
 
+    private final CouchRestCore core;
+
     private final DiscoveredUnit discoveredUnit;
 
     private final String resourcePathWithTrailingSlash;
@@ -37,23 +40,29 @@ public abstract class MappedResource
     /**
      * Stores path and initializes sub mapping handlers by calling {@link #createSubMappingHandlers()}.
      *
+     * @param core                          CouchRest core instance which created this resource.
      * @param discoveredUnit                Source for the mapping.
      * @param resourcePathWithTrailingSlash Path of resource with trailing slash.
      */
-    public MappedResource(DiscoveredUnit discoveredUnit, String resourcePathWithTrailingSlash) {
-        if ( discoveredUnit == null ) {
+    public MappedResource(CouchRestCore core, DiscoveredUnit discoveredUnit, String resourcePathWithTrailingSlash) {
+        if ( core == null ) {
+            throw new IllegalArgumentException("core must not be null.");
+        }
+
+        if (discoveredUnit == null) {
             throw new IllegalArgumentException("discoveredUnit must not be null.");
         }
 
-        if ( !resourcePathWithTrailingSlash.endsWith("/") ) {
+        if (!resourcePathWithTrailingSlash.endsWith("/")) {
             throw new IllegalArgumentException("path must end with trailing slash.");
         }
 
+        this.core = core;
         this.discoveredUnit = discoveredUnit;
         this.resourcePathWithTrailingSlash = resourcePathWithTrailingSlash;
         this.subMappingHandlers = createSubMappingHandlers();
 
-        if ( this.subMappingHandlers == null ) {
+        if (this.subMappingHandlers == null) {
             throw new IllegalStateException("Implementation of createSubMappingHandlers() returned null. " +
                     "Must return an instance of List.");
         }
@@ -89,9 +98,9 @@ public abstract class MappedResource
     public Optional<MappingHandler> findHandler(HttpServletRequest request) {
         final String path = RequestUtil.getRequestPathWithTrailingSlash(request);
 
-        if ( path.startsWith(resourcePathWithTrailingSlash) ) {
-            for ( final MappingHandler subHandler : subMappingHandlers ) {
-                if ( subHandler.accepts(request) ) return Optional.of(subHandler);
+        if (path.startsWith(resourcePathWithTrailingSlash)) {
+            for (final MappingHandler subHandler : subMappingHandlers) {
+                if (subHandler.accepts(request)) return Optional.of(subHandler);
             }
         }
 
@@ -111,7 +120,7 @@ public abstract class MappedResource
     public ResponseEntity handle(HttpServletRequest request, ObjectMapper objectMapper) {
         final Optional<MappingHandler> handler = findHandler(request);
 
-        if ( handler.isEmpty() ) {
+        if (handler.isEmpty()) {
             throw new IllegalStateException("MappedResource shall handle request, but can't find appropriate sub handler.");
         }
 
@@ -143,6 +152,15 @@ public abstract class MappedResource
      */
     protected List<MappingHandler> getSubMappingHandlers() {
         return Collections.unmodifiableList(subMappingHandlers);
+    }
+
+    /**
+     * Returns core which created this resource.
+     *
+     * @return Related core.
+     */
+    public CouchRestCore getCore() {
+        return core;
     }
 
 }

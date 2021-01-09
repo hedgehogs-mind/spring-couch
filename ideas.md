@@ -1,5 +1,15 @@
-- we needs securityexpressionhandlers https://stackoverflow.com/questions/17263506/how-to-evaluate-a-spel-security-expression-in-custom-java-code
+- extend config and core
+  - default endpoint rule > acts as a placeholder for indidivudal rules
+  - global rule > must be true before an individual rule 
+  - EntitySecurityHandler > extend
+
+
+- entity security handler
+- pass core to mapped resources
+
 - security docs
+  - @CouchRest > attribute `checkBaseSecurityRule`
+  - security check flow
   - custom root object for spel evaluation
     - authentication trust resolver
     - permission evaluator
@@ -10,7 +20,10 @@
 - config docs
   - spring el root object
   - adapter
+  - security rule default
+  - security rule global
 
+- config root object > as bean > post process > enable dependency injection etc.
 
 - build.gradle > versioned dependencies
 

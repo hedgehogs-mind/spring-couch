@@ -17,6 +17,8 @@ public class ValidatedAndNormalizedCouchRestConfiguration
 
     private final String baseSecurityRule;
 
+    private final String defaultEndpointSecurityRule;
+
     private final Optional<Object> springElEvaluationRootObject;
 
     /**
@@ -27,6 +29,7 @@ public class ValidatedAndNormalizedCouchRestConfiguration
         this.basePath = validateAndNormalizeBasePath(original.getCouchRestBasePath());
         this.objectMapper = original.getCouchRestObjectMapper();
         this.baseSecurityRule = validateBaseSecurityRule(original.getBaseSecurityRule());
+        this.defaultEndpointSecurityRule = validateDefaultEndpointSecurityRule(original.getDefaultEndpointSecurityRule());
         this.springElEvaluationRootObject = original.getSpringElEvaluationRootObject();
     }
 
@@ -57,6 +60,20 @@ public class ValidatedAndNormalizedCouchRestConfiguration
         return baseSecurityRule;
     }
 
+    /**
+     * Checks that the given rule is not empty.
+     *
+     * @param defaultEndpointSecurityRule Rule to check.
+     * @return Rule.
+     */
+    public String validateDefaultEndpointSecurityRule(final String defaultEndpointSecurityRule) {
+        if ( defaultEndpointSecurityRule == null || defaultEndpointSecurityRule.isBlank() ) {
+            throw new IllegalArgumentException("CouchRest defaultEndpointSecurityRule must not be empty.");
+        }
+
+        return defaultEndpointSecurityRule;
+    }
+
     @Override
     public String getCouchRestBasePath() {
         return basePath;
@@ -70,6 +87,11 @@ public class ValidatedAndNormalizedCouchRestConfiguration
     @Override
     public String getBaseSecurityRule() {
         return baseSecurityRule;
+    }
+
+    @Override
+    public String getDefaultEndpointSecurityRule() {
+        return defaultEndpointSecurityRule;
     }
 
     @Override

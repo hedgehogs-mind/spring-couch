@@ -5,6 +5,7 @@ import com.hedgehogsmind.springcouchrest.workers.mapping.MappedResource;
 import com.hedgehogsmind.springcouchrest.workers.mapping.MappedResourceSubHandlerBase;
 import com.hedgehogsmind.springcouchrest.workers.mapping.entity.exceptions.IdTypeParsingNotSupportedException;
 import com.hedgehogsmind.springcouchrest.workers.mapping.entity.exceptions.IdValueNotParsableException;
+import com.hedgehogsmind.springcouchrest.workers.security.ResourceCrudSecurityHandler;
 import org.springframework.data.repository.CrudRepository;
 
 import javax.persistence.metamodel.EntityType;
@@ -59,6 +60,16 @@ public abstract class MappedEntitySubHandlerBase
      */
     protected MappedEntityResource getParentEntityResource() {
         return parentEntityResource;
+    }
+
+    /**
+     * Convenience method. Calls {@link MappedEntityResource#getSecurityHandler()} of
+     * {@link #getParentEntityResource()}.
+     *
+     * @return Security handler of corresponding entity resource.
+     */
+    protected ResourceCrudSecurityHandler getSecurityHandler() {
+        return parentEntityResource.getSecurityHandler();
     }
 
     /**

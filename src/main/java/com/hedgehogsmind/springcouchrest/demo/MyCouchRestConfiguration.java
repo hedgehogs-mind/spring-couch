@@ -7,4 +7,13 @@ import org.springframework.stereotype.Component;
 public class MyCouchRestConfiguration
         extends CouchRestConfigurationAdapter {
 
+    @Override
+    public String getBaseSecurityRule() {
+        return "permitAll()";
+    }
+
+    @Override
+    public String getDefaultEndpointSecurityRule() {
+        return "permitAll()";
+    }
 }

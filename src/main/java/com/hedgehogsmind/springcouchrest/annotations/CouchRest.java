@@ -1,5 +1,6 @@
 package com.hedgehogsmind.springcouchrest.annotations;
 
+import com.hedgehogsmind.springcouchrest.configuration.CouchRestConfiguration;
 import com.hedgehogsmind.springcouchrest.util.EntityUtil;
 
 import java.lang.annotation.ElementType;
@@ -19,5 +20,14 @@ public @interface CouchRest {
      * @return Resource name.
      */
     String resourceName() default "";
+
+    /**
+     * This flag determines, if CouchRest shall check the base security rule
+     * defined via {@link CouchRestConfiguration#getBaseSecurityRule()} before checking
+     * the security rules on endpoint level.
+     *
+     * @return True if base security rule shall be checked, fasle if it shall be ignored.
+     */
+    boolean checkBaseSecurityRule() default true;
 
 }

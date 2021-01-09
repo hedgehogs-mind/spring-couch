@@ -48,6 +48,20 @@ public class MappedEntityGetHandler
                 pathVariablesAfterResource.length <= 1;
     }
 
+    /**
+     * In case there is no path variable, this method will return all entity instances. If one is given,
+     * this method tries to find that entity. In case it does not exist, a NOT_FOUND result is returned.
+     *
+     * @param request                    Request to handle.
+     * @param objectMapper               ObjectMapper to use for JSON (de-) serialization.
+     * @param locale                     Locale of request or a default one.
+     * @param method                     HTTP method of request.
+     * @param fullPath                   Full path of request with trailing slash.
+     * @param pathAfterResource          Path after parent resource's path. Ends with trailing slash or is empty.
+     * @param pathVariablesAfterResource PathAfterResource split into parts separated by slash. Empty trailing parts ignored.
+     * @param queryParameters            Query parameters.
+     * @return ResponseEntity which should carry created entity instance.
+     */
     @Override
     public ResponseEntity handle(HttpServletRequest request,
                                  ObjectMapper objectMapper,
@@ -57,6 +71,8 @@ public class MappedEntityGetHandler
                                  String pathAfterResource,
                                  String[] pathVariablesAfterResource,
                                  Map<String, String[]> queryParameters) {
+
+        getSecurityHandler().assertReadAccess();
 
         if (pathVariablesAfterResource.length == 0) {
 

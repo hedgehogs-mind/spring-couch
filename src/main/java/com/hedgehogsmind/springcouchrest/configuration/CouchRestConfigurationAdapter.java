@@ -25,6 +25,11 @@ public class CouchRestConfigurationAdapter implements CouchRestConfiguration {
     }
 
     @Override
+    public String getDefaultEndpointSecurityRule() {
+        return "denyAll()";
+    }
+
+    @Override
     public Optional<Object> getSpringElEvaluationRootObject() {
         return Optional.empty();
     }
