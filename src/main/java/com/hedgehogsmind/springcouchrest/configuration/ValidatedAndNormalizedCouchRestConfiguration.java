@@ -17,6 +17,8 @@ public class ValidatedAndNormalizedCouchRestConfiguration
 
     private final String baseSecurityRule;
 
+    private final Optional<Object> springElEvaluationRootObject;
+
     /**
      * Copies data and normalizes it if necessary.
      * @param original Original configuration.
@@ -25,6 +27,7 @@ public class ValidatedAndNormalizedCouchRestConfiguration
         this.basePath = validateAndNormalizeBasePath(original.getCouchRestBasePath());
         this.objectMapper = original.getCouchRestObjectMapper();
         this.baseSecurityRule = validateBaseSecurityRule(original.getBaseSecurityRule());
+        this.springElEvaluationRootObject = original.getSpringElEvaluationRootObject();
     }
 
     /**
@@ -69,4 +72,8 @@ public class ValidatedAndNormalizedCouchRestConfiguration
         return baseSecurityRule;
     }
 
+    @Override
+    public Optional<Object> getSpringElEvaluationRootObject() {
+        return springElEvaluationRootObject;
+    }
 }

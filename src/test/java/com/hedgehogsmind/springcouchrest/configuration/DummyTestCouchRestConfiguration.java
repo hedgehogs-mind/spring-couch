@@ -1,19 +1,11 @@
 package com.hedgehogsmind.springcouchrest.configuration;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.util.Optional;
-
 public class DummyTestCouchRestConfiguration
-        implements CouchRestConfiguration {
+        extends CouchRestConfigurationAdapter {
 
     @Override
     public String getCouchRestBasePath() {
-        return "/testing/couchrest/";
+        return "/testing/api/";
     }
 
-    @Override
-    public Optional<ObjectMapper> getCouchRestObjectMapper() {
-        return Optional.empty();
-    }
 }

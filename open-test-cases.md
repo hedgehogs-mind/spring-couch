@@ -1,3 +1,7 @@
+# CouchRestCore
+
+- Config base security rule does not return Boolean value
+
 # CouchRestHandlerAdapter
 
 We need to test

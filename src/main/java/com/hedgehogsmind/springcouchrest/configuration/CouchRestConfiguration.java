@@ -30,4 +30,15 @@ public interface CouchRestConfiguration {
      */
     String getBaseSecurityRule();
 
+    /**
+     * You may want to provide an own root object for SpringEL expression evaluation.
+     * {@link com.hedgehogsmind.springcouchrest.annotations.CouchRest} will normally
+     * instantiate a {@link com.hedgehogsmind.springcouchrest.workers.springel.CouchRestSpelRoot} if you do
+     * not provide an object here. You may also extend
+     * {@link com.hedgehogsmind.springcouchrest.workers.springel.CouchRestSpelRoot}.
+     *
+     * @return Optional overwriting root object for SpringEL expression evaluation.
+     */
+    Optional<Object> getSpringElEvaluationRootObject();
+
 }

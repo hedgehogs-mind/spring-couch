@@ -1,9 +1,9 @@
 package com.hedgehogsmind.springcouchrest.integration;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hedgehogsmind.springcouchrest.beans.CouchRestCore;
 import com.hedgehogsmind.springcouchrest.annotations.EnableCouchRest;
+import com.hedgehogsmind.springcouchrest.beans.CouchRestCore;
 import com.hedgehogsmind.springcouchrest.configuration.CouchRestConfiguration;
+import com.hedgehogsmind.springcouchrest.configuration.CouchRestConfigurationAdapter;
 import com.hedgehogsmind.springcouchrest.rest.problemdetail.I18nProblemDetailDescriptor;
 import com.hedgehogsmind.springcouchrest.workers.mapping.entity.MappedEntityResource;
 import com.squareup.okhttp.*;
@@ -32,20 +32,11 @@ public abstract class CouchRestIntegrationTestBase {
     @EnableCouchRest
     @Import(Config.class)
     @EntityScan(basePackageClasses = CouchRestIntegrationTestBase.class)
-    @EnableWebMvc
     public static class App {
+
     }
 
-    public static class Config implements CouchRestConfiguration {
-        @Override
-        public String getCouchRestBasePath() {
-            return "/junit/api/couchrest/";
-        }
-
-        @Override
-        public Optional<ObjectMapper> getCouchRestObjectMapper() {
-            return Optional.empty();
-        }
+    public static class Config extends CouchRestConfigurationAdapter {
     }
 
     @Autowired

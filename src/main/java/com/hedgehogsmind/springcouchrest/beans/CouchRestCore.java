@@ -1,10 +1,7 @@
 package com.hedgehogsmind.springcouchrest.beans;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hedgehogsmind.springcouchrest.beans.exceptions.EntityAlreadyManagedByRepositoryException;
-import com.hedgehogsmind.springcouchrest.beans.exceptions.NoConfigurationFoundException;
-import com.hedgehogsmind.springcouchrest.beans.exceptions.NoUniqueConfigurationFoundException;
-import com.hedgehogsmind.springcouchrest.beans.exceptions.ResourcePathClashException;
+import com.hedgehogsmind.springcouchrest.beans.exceptions.*;
 import com.hedgehogsmind.springcouchrest.configuration.CouchRestConfiguration;
 import com.hedgehogsmind.springcouchrest.configuration.ValidatedAndNormalizedCouchRestConfiguration;
 import com.hedgehogsmind.springcouchrest.data.discovery.DiscoveredCrudRepository;
@@ -14,13 +11,14 @@ import com.hedgehogsmind.springcouchrest.util.PathUtil;
 import com.hedgehogsmind.springcouchrest.workers.discovery.CouchRestDiscovery;
 import com.hedgehogsmind.springcouchrest.workers.mapping.MappedResource;
 import com.hedgehogsmind.springcouchrest.workers.mapping.entity.MappedEntityResource;
+import com.hedgehogsmind.springcouchrest.workers.springel.CouchRestSpelRoot;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
-import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.Expression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.expression.spel.support.StandardEvaluationContext;
 
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
@@ -36,15 +34,19 @@ public class CouchRestCore {
 
     private final Optional<ObjectMapper> globalObjectMapper;
 
-    private ObjectMapper couchRestObjectMapper;
-
     private CouchRestConfiguration couchRestConfiguration;
 
     private CouchRestDiscovery couchRestDiscovery;
 
     private Set<MappedResource> mappedResources;
 
+    private ObjectMapper couchRestObjectMapper;
+
+    private Object couchRestSpelEvaluationRootObject;
+
     private SpelExpressionParser couchRestSpelExpressionParser;
+
+    private StandardEvaluationContext couchRestSpelEvaluationContext;
 
     private Expression couchRestBaseSecurityRule;
 
@@ -86,12 +88,14 @@ public class CouchRestCore {
      *     Initializes:
      *     <ul>
      *         <li>{@link #getCouchRestSpelExpressionParser()}</li>
+     *         <li>{@link #getCouchRestSpelEvaluationContext()}</li>
      *     </ul>
      * </p>
      *
      */
     protected void init() {
         this.couchRestSpelExpressionParser = new SpelExpressionParser();
+        this.couchRestSpelEvaluationContext = new StandardEvaluationContext();
     }
 
     /**
@@ -117,10 +121,14 @@ public class CouchRestCore {
      * Does the following:
      * <ul>
      *     <li>{@link #setupObjectMapper()}</li>
+     *     <li>{@link #setupSpringElEvaluationRootObject()}</li>
+     *     <li>{@link #setupBaseSecurityRule()}</li>
      * </ul>
      */
     protected void applyCouchRestConfiguration() {
         setupObjectMapper();
+        setupSpringElEvaluationRootObject();
+        setupBaseSecurityRule();
     }
 
     /**
@@ -137,6 +145,22 @@ public class CouchRestCore {
     }
 
     /**
+     * Sets spring el root object for evaluation. Prefers root object from
+     * {@link CouchRestConfiguration}. If not given, instantiates a
+     * {@link CouchRestSpelRoot} instance.
+     * Applies root object to {@link #getCouchRestSpelEvaluationContext()}.
+     */
+    protected void setupSpringElEvaluationRootObject() {
+        this.couchRestSpelEvaluationRootObject =
+                couchRestConfiguration.getSpringElEvaluationRootObject()
+                .orElse(new CouchRestSpelRoot());
+
+        this.couchRestSpelEvaluationContext.setRootObject(
+                this.couchRestSpelEvaluationRootObject
+        );
+    }
+
+    /**
      * Tries to parse base security rule and checks if it returns a boolean value.
      */
     protected void setupBaseSecurityRule() {
@@ -144,7 +168,14 @@ public class CouchRestCore {
                 couchRestConfiguration.getBaseSecurityRule()
         );
 
-        // TODO @peter test boolean result
+        final Object testResult = this.couchRestBaseSecurityRule.getValue(couchRestSpelEvaluationContext);
+
+        if ( !(testResult instanceof Boolean) ) {
+            throw new BaseSecurityRuleDoesNotReturnBooleanValueException(
+                    "Base security rule did not return boolean result. Instead it was of type: "+
+                    (testResult != null ? testResult.getClass() : "null")
+            );
+        }
     }
 
     /**
@@ -290,5 +321,13 @@ public class CouchRestCore {
 
     public Expression getCouchRestBaseSecurityRule() {
         return couchRestBaseSecurityRule;
+    }
+
+    public Object getCouchRestSpelEvaluationRootObject() {
+        return couchRestSpelEvaluationRootObject;
+    }
+
+    public StandardEvaluationContext getCouchRestSpelEvaluationContext() {
+        return couchRestSpelEvaluationContext;
     }
 }

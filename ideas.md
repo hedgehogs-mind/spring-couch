@@ -1,5 +1,18 @@
 - we needs securityexpressionhandlers https://stackoverflow.com/questions/17263506/how-to-evaluate-a-spel-security-expression-in-custom-java-code
+- security docs
+  - custom root object for spel evaluation
+    - authentication trust resolver
+    - permission evaluator
+    - role prefix
+    - custom extension
+    - available expressions
+  
+- config docs
+  - spring el root object
+  - adapter
 
+
+- build.gradle > versioned dependencies
 
 - CouchRestHandlerMapping
   - Logging
