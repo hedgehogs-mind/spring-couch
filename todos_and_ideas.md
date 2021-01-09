@@ -1,7 +1,16 @@
-- extend config and core
-  - default endpoint rule > acts as a placeholder for indidivudal rules
-  - global rule > must be true before an individual rule 
-  - EntitySecurityHandler > extend
+- spel root > set for authorities and roles > faster
+
+- integration test base
+  - login
+  - logout
+  - change authorities
+  - change roles
+  - get authentication
+  - update authentication: https://stackoverflow.com/questions/9910252/how-to-reload-authorities-on-user-update-with-spring-security
+
+- CouchRestSpelRoot > as bean
+  - autowired optional trustresolver
+  - PermissionEvaluator too?
 
 
 - entity security handler
