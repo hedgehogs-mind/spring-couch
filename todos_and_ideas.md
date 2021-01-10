@@ -1,3 +1,10 @@
+- test base
+  - own ok http client for each test method > reset via BeforeEach
+  - dynamic AuthenticationProvider 
+  - login via endpoint
+  - logout
+
+
 - integration test base
   - login
   - logout

@@ -1,4 +1,4 @@
-package com.hedgehogsmind.springcouchrest.integration.tests;
+package com.hedgehogsmind.springcouchrest.integration.tests.crud;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,34 +16,7 @@ import java.util.List;
 import java.util.Optional;
 
 public class CouchRestCrudMethodsTest
-        extends CouchRestIntegrationTestBase {
-
-    @Autowired
-    public TestNoteEntityRepository noteRepository;
-
-    public List<TestNoteEntity> persistedTestNotes;
-
-    @BeforeEach
-    public void setupDummyData() {
-        noteRepository.save(new TestNoteEntity("First note", "This is a note for CouchRest testing.", 2));
-        noteRepository.save(new TestNoteEntity("Pinned information", "CouchRest is a simple to use Spring addition to publish entities via REST.", 5));
-        noteRepository.save(new TestNoteEntity("Shopping list", "- carrots\n- sugar\n- yeast\n- 2 minions", 3));
-
-        persistedTestNotes = new ArrayList<>();
-        noteRepository.findAll().forEach(persistedTestNotes::add);
-    }
-
-    /**
-     * Deletes all existing test notes.
-     */
-    @AfterEach
-    public void cleanupDummyData() {
-        noteRepository.deleteAll();
-    }
-
-    protected String getNoteBasePath() {
-        return getBasePath() + "testNoteEntity/";
-    }
+        extends CouchRestCrudIntegrationTestBase {
 
     @Test
     public void testGetAll() throws JsonProcessingException  {

@@ -6,10 +6,12 @@ import com.hedgehogsmind.springcouchrest.configuration.CouchRestConfiguration;
 import com.hedgehogsmind.springcouchrest.configuration.CouchRestConfigurationAdapter;
 import com.hedgehogsmind.springcouchrest.rest.problemdetail.I18nProblemDetailDescriptor;
 import com.hedgehogsmind.springcouchrest.workers.mapping.entity.MappedEntityResource;
-import com.squareup.okhttp.*;
+import okhttp3.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -21,18 +23,35 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Configuration
 public abstract class CouchRestIntegrationTestBase {
+
+    protected static final String LOGIN_URL = "/do_login";
+
+    protected static final String LOGIN_SUCCESS_URL = "/success_login";
+
+    protected static final String LOGOUT_URL = "/do_logout";
+
+    protected static final String LOGOUT_SUCCESS_URL = "/success_logout";
 
     protected static ThreadLocal<String> TEST_BASE_SEC_RULE = new ThreadLocal<>();
 
@@ -57,6 +76,16 @@ public abstract class CouchRestIntegrationTestBase {
     @EntityScan(basePackageClasses = CouchRestIntegrationTestBase.class)
     @Import({SpringSecurityConfig.class})
     public static class App {
+
+        @Bean
+        public PasswordEncoder passwordEncoder() {
+            return new BCryptPasswordEncoder();
+        }
+
+        @Bean
+        public UserDetailsService userDetailsService() {
+            return new TestSingleUserDetailsService(passwordEncoder());
+        }
 
         @Bean
         public CouchRestConfiguration couchRestConfiguration() {
@@ -85,17 +114,114 @@ public abstract class CouchRestIntegrationTestBase {
                     .authorizeRequests()
                     .antMatchers(HttpMethod.GET).permitAll()
                     .antMatchers(HttpMethod.POST).permitAll()
-                    .antMatchers(HttpMethod.DELETE).permitAll();
+                    .antMatchers(HttpMethod.DELETE).permitAll()
+
+                    .and()
+                    .formLogin()
+                    .loginProcessingUrl(LOGIN_URL)
+                    .defaultSuccessUrl(LOGIN_SUCCESS_URL)
+
+                    .and()
+                    .logout()
+                    .logoutUrl(LOGOUT_URL)
+                    .logoutSuccessUrl(LOGOUT_SUCCESS_URL)
+                    .deleteCookies("JSESSIONID");
+
         }
     }
 
     @Autowired
-    public CouchRestCore core;
+    protected CouchRestCore core;
+
+    @Autowired
+    protected TestSingleUserDetailsService userDetailsService;
 
     @LocalServerPort
-    public int port;
+    protected int port;
 
     protected int lastStatusCode = -1;
+
+    protected OkHttpClient httpClient;
+
+    @BeforeEach
+    public void resetTestUser() {
+        userDetailsService.resetTestUser();
+    }
+
+    @BeforeEach
+    public void setupHttpClient() {
+        httpClient = new OkHttpClient.Builder()
+                .followRedirects(false)
+                .cookieJar(new DumbCookieJar())
+                .build();
+
+    }
+
+    @AfterEach
+    public void logoutAtTheEnd() {
+        logout();
+    }
+
+    /**
+     * Performs HTTP call against Spring Security's form login.
+     */
+    protected void login() {
+        final RequestBody formBody = new MultipartBody.Builder()
+                .setType(MultipartBody.FORM)
+                .addFormDataPart("username", userDetailsService.testUser.username)
+                .addFormDataPart("password", userDetailsService.testUser.password)
+                .build();
+
+        final Request request = new Request.Builder()
+                .url("http://localhost:"+port+LOGIN_URL)
+                .post(formBody)
+                .build();
+
+        try {
+            final Response response = httpClient.newCall(request).execute();
+            if ( response.code() != 302 &&
+                    response.header("Location", "/") !=
+                            ("http://localhost:"+port+LOGIN_SUCCESS_URL) ) {
+
+                throw new IllegalStateException("Login failed: "+response.toString());
+            }
+        } catch ( IOException e ) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Calls Spring Security's logout url.
+     */
+    protected void logout() {
+        final Request request = new Request.Builder()
+                .url("http://localhost:"+port+LOGOUT_URL)
+                .get()
+                .build();
+
+        try {
+            final Response response = httpClient.newCall(request).execute();
+            if ( response.code() != 302 &&
+                    response.header("Location", "/") !=
+                            ("http://localhost:"+port+LOGOUT_SUCCESS_URL) ) {
+
+                throw new IllegalStateException("Logout failed: "+response.toString());
+            }
+        } catch ( IOException e ) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Sets authorities of test user stored in userDetailsService.
+     *
+     * @param authorities Authorities.
+     */
+    protected void setAuthoritiesOfTestUser(final String... authorities) {
+        userDetailsService.testUser.authorities = new HashSet<>(
+                Arrays.asList(authorities)
+        );
+    }
 
     /**
      * Fetches current authentication via {@link SecurityContextHolder}.
@@ -106,6 +232,33 @@ public abstract class CouchRestIntegrationTestBase {
         return Optional.ofNullable(
                 SecurityContextHolder.getContext().getAuthentication()
         );
+    }
+
+    /**
+     * Adds a simple {@link UsernamePasswordAuthenticationToken} with the given authorities
+     * to the {@link SecurityContextHolder}.
+     *
+     * @param authorities Authorities the (new) authentication shall get.
+     */
+    protected void setAuthentication(final String... authorities) {
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(
+                        "tester",
+                        "tester@password",
+                        authorities == null ?
+                            new ArrayList<>() :
+                            Arrays.asList(authorities).stream()
+                                .map(authority -> new SimpleGrantedAuthority(authority))
+                                .collect(Collectors.toList())
+                )
+        );
+    }
+
+    /**
+     * Removes authentication from {@link SecurityContextHolder}.
+     */
+    protected void removeAuthentication() {
+        SecurityContextHolder.getContext().setAuthentication(null);
     }
 
     /**
@@ -149,8 +302,6 @@ public abstract class CouchRestIntegrationTestBase {
         if (!path.startsWith("/")) {
             throw new IllegalArgumentException("path must start with leading slash");
         }
-
-        final OkHttpClient httpClient = new OkHttpClient();
 
         final Request request = new Request.Builder()
                 .method(
