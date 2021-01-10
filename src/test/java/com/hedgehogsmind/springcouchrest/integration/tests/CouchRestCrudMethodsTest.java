@@ -8,10 +8,7 @@ import com.hedgehogsmind.springcouchrest.integration.env.TestNoteEntityRepositor
 import com.hedgehogsmind.springcouchrest.rest.problemdetail.problems.CouchRestProblems;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;

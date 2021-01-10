@@ -7,11 +7,9 @@ import com.hedgehogsmind.springcouchrest.configuration.CouchRestConfigurationAda
 import com.hedgehogsmind.springcouchrest.rest.problemdetail.I18nProblemDetailDescriptor;
 import com.hedgehogsmind.springcouchrest.workers.mapping.entity.MappedEntityResource;
 import com.squareup.okhttp.*;
-import org.apache.catalina.filters.HttpHeaderSecurityFilter;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -19,62 +17,75 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.web.WebSecurityConfigurer;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.io.IOException;
 import java.util.Optional;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Configuration
 public abstract class CouchRestIntegrationTestBase {
 
-    protected static final String USER_NAME = "couch_rest_test";
+    protected static ThreadLocal<String> TEST_BASE_SEC_RULE = new ThreadLocal<>();
 
-    protected static final String USER_PASSWORD = "testsAreAwesome!";
+    protected static ThreadLocal<String> TEST_DEFAULT_ENDPOINT_SEC_RULE = new ThreadLocal<>();
+
+    public CouchRestIntegrationTestBase() {
+        TEST_BASE_SEC_RULE.set(getBaseSecurityRule());
+        TEST_DEFAULT_ENDPOINT_SEC_RULE.set(getDefaultEndpointSecurityRule());
+    }
+
+    protected String getBaseSecurityRule() {
+        return "permitAll()";
+    }
+
+    protected String getDefaultEndpointSecurityRule() {
+        return "permitAll()";
+    }
 
     @SpringBootApplication(scanBasePackageClasses = CouchRestIntegrationTestBase.class)
     @EnableJpaRepositories(considerNestedRepositories = true)
     @EnableCouchRest
     @EntityScan(basePackageClasses = CouchRestIntegrationTestBase.class)
-    @Import(SecConfig.class)
+    @Import({SpringSecurityConfig.class})
     public static class App {
 
         @Bean
-        public CouchRestConfiguration couchRestConfig() {
-            return new CouchRestConfigurationAdapter();
+        public CouchRestConfiguration couchRestConfiguration() {
+            return new CouchRestConfigurationAdapter() {
+                @Override
+                public String getBaseSecurityRule() {
+                    return TEST_BASE_SEC_RULE.get();
+                }
+
+                @Override
+                public String getDefaultEndpointSecurityRule() {
+                    return TEST_DEFAULT_ENDPOINT_SEC_RULE.get();
+                }
+            };
         }
 
     }
 
-    public static class SecConfig extends WebSecurityConfigurerAdapter {
-        private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-
-        @Override
-        protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-            auth.inMemoryAuthentication()
-                    .passwordEncoder(passwordEncoder)
-                    .withUser(USER_NAME).password(passwordEncoder.encode(USER_PASSWORD)).authorities("USER");
-        }
+    public static class SpringSecurityConfig
+            extends WebSecurityConfigurerAdapter {
 
         @Override
         protected void configure(HttpSecurity http) throws Exception {
-            http.authorizeRequests().anyRequest().permitAll();
+            http
+                    .csrf().disable()
+                    .authorizeRequests()
+                    .antMatchers(HttpMethod.GET).permitAll()
+                    .antMatchers(HttpMethod.POST).permitAll()
+                    .antMatchers(HttpMethod.DELETE).permitAll();
         }
     }
 
@@ -88,6 +99,7 @@ public abstract class CouchRestIntegrationTestBase {
 
     /**
      * Fetches current authentication via {@link SecurityContextHolder}.
+     *
      * @return Current authentication or empty.
      */
     protected Optional<Authentication> getAuthentication() {
@@ -110,8 +122,8 @@ public abstract class CouchRestIntegrationTestBase {
                 .filter(em -> em.getEntityType().getJavaType().equals(entityClass))
                 .findAny();
 
-        if ( entityMapping.isEmpty() ) {
-            Assertions.fail("No mapping for entity of type "+entityClass+" found");
+        if (entityMapping.isEmpty()) {
+            Assertions.fail("No mapping for entity of type " + entityClass + " found");
         }
     }
 
@@ -128,13 +140,13 @@ public abstract class CouchRestIntegrationTestBase {
      * Performs a http request against the local test server. Stores status code in
      * {@link #lastStatusCode}.
      *
-     * @param path Path starting with leading slash.
-     * @param method HTTP method.
+     * @param path     Path starting with leading slash.
+     * @param method   HTTP method.
      * @param jsonBody Optional. Null or JSON payload as String.
      * @return Response.
      */
     protected String perform(final String path, final String method, final String jsonBody) {
-        if ( !path.startsWith("/") ) {
+        if (!path.startsWith("/")) {
             throw new IllegalArgumentException("path must start with leading slash");
         }
 
@@ -150,7 +162,7 @@ public abstract class CouchRestIntegrationTestBase {
                                 )
                                 : null
                 )
-                .url("http://localhost:"+port+path)
+                .url("http://localhost:" + port + path)
                 .build();
 
         try {
@@ -158,13 +170,14 @@ public abstract class CouchRestIntegrationTestBase {
             lastStatusCode = response.code();
 
             return new String(response.body().bytes());
-        } catch ( IOException e ) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
     /**
      * Parses body as json object.
+     *
      * @param body Body.
      * @return Object from body or empty object if body is empty.
      */
@@ -176,6 +189,7 @@ public abstract class CouchRestIntegrationTestBase {
 
     /**
      * Parses body as json array.
+     *
      * @param body Body.
      * @return Array of body or empty array if body is empty.
      */
@@ -218,7 +232,7 @@ public abstract class CouchRestIntegrationTestBase {
     /**
      * Performs POST call.
      *
-     * @param path Path with leading slash.
+     * @param path     Path with leading slash.
      * @param jsonBody JSON payload.
      * @return Response.
      */
@@ -229,7 +243,7 @@ public abstract class CouchRestIntegrationTestBase {
     /**
      * Same as {@link #post(String, String)} but tries to parse response as {@link JSONObject}.
      *
-     * @param path Path with leading slash.
+     * @param path     Path with leading slash.
      * @param jsonBody Body payload.
      * @return JSON response.
      */
@@ -240,7 +254,7 @@ public abstract class CouchRestIntegrationTestBase {
     /**
      * Same as {@link #post(String, String)} but tries to parse response as {@link JSONArray}.
      *
-     * @param path Path with leading slash.
+     * @param path     Path with leading slash.
      * @param jsonBody Body payload.
      * @return JSON array response.
      */
@@ -260,6 +274,7 @@ public abstract class CouchRestIntegrationTestBase {
 
     /**
      * Sames as {@link #delete(String)}, but tries to parse response body as JSON.
+     *
      * @param path Path to perform delete call against.
      * @return Response as JSON object.
      */
@@ -274,7 +289,7 @@ public abstract class CouchRestIntegrationTestBase {
      * held in the descriptor.
      *
      * @param descriptor Descriptor to get expected ProblemDetail type from.
-     * @param response Response to check for ProblemDetail and its type.
+     * @param response   Response to check for ProblemDetail and its type.
      */
     protected void assertProblemDetailGiven(final I18nProblemDetailDescriptor descriptor,
                                             final JSONObject response) {
@@ -285,6 +300,7 @@ public abstract class CouchRestIntegrationTestBase {
 
     /**
      * Checks that {@link #lastStatusCode} mathches the given one.
+     *
      * @param expected Expected status code.
      */
     protected void assertStatusCode(int expected) {
