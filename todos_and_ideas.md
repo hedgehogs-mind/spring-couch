@@ -1,5 +1,3 @@
-- spel root > set for authorities and roles > faster
-
 - integration test base
   - login
   - logout
@@ -9,12 +7,8 @@
   - update authentication: https://stackoverflow.com/questions/9910252/how-to-reload-authorities-on-user-update-with-spring-security
 
 - CouchRestSpelRoot > as bean
-  - autowired optional trustresolver
-  - PermissionEvaluator too?
-
-
-- entity security handler
-- pass core to mapped resources
+  - Core autowires the instance
+    - trust resolver is injected by default (if present)
 
 - security docs
   - @CouchRest > attribute `checkBaseSecurityRule`
@@ -32,15 +26,10 @@
   - security rule default
   - security rule global
 
-- config root object > as bean > post process > enable dependency injection etc.
-
 - build.gradle > versioned dependencies
 
 - CouchRestHandlerMapping
   - Logging
-  - WebMvcConfigurationSupport
-    - make optional > fetch interceptors only if present 
-    - __otherwise WARNING__ 
   
 - crud doc
   
@@ -55,6 +44,7 @@
 - logging
   - especially unhandled exceptions
   - logging of problem details > really ? isn't this overhead?
+  
 - json batch
 
 # More

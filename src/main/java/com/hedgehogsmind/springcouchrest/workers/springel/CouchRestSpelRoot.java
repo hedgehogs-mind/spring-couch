@@ -1,5 +1,7 @@
 package com.hedgehogsmind.springcouchrest.workers.springel;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.security.access.PermissionEvaluator;
 import org.springframework.security.access.expression.DenyAllPermissionEvaluator;
 import org.springframework.security.access.expression.SecurityExpressionOperations;
@@ -11,7 +13,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.Serializable;
 import java.util.Collections;
-import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -45,20 +47,22 @@ import java.util.stream.Collectors;
 public class CouchRestSpelRoot
         implements SecurityExpressionOperations {
 
-    private final AuthenticationTrustResolver defaultAuthenticationTrustResolver =
+
+    private AuthenticationTrustResolver trustResolver =
             new AuthenticationTrustResolverImpl();
 
-    private final PermissionEvaluator defaultPermissionEvaluator =
+    private final PermissionEvaluator permissionEvaluator =
             new DenyAllPermissionEvaluator();
 
     /**
      * Returns a default {@link AuthenticationTrustResolver} of type
-     * {@link AuthenticationTrustResolverImpl}.
+     * {@link AuthenticationTrustResolverImpl}. It is possible that a bean is returned,
+     * which has been injected by {@link #setTrustResolver(AuthenticationTrustResolver)}.
      *
      * @return Default {@link AuthenticationTrustResolverImpl} instance.
      */
     public AuthenticationTrustResolver getAuthenticationTrustResolver() {
-        return defaultAuthenticationTrustResolver;
+        return trustResolver;
     }
 
     /**
@@ -67,7 +71,7 @@ public class CouchRestSpelRoot
      * @return Default {@link DenyAllPermissionEvaluator} instance.
      */
     public PermissionEvaluator getPermissionEvaluator() {
-        return defaultPermissionEvaluator;
+        return permissionEvaluator;
     }
 
     /**
@@ -124,14 +128,14 @@ public class CouchRestSpelRoot
      *
      * @return List of granted authorities. Empty if no authentication is present.
      */
-    public List<String> getAuthorities() {
+    public Set<String> getAuthorities() {
         final Authentication authentication = getAuthentication();
 
-        if (authentication == null) return Collections.emptyList();
+        if (authentication == null) return Collections.emptySet();
 
         return authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
     }
 
     /**
@@ -139,10 +143,10 @@ public class CouchRestSpelRoot
      *
      * @return Roles of current authentication. Empty if no authentication is present.
      */
-    public List<String> getRoles() {
+    public Set<String> getRoles() {
         return getAuthorities().stream()
                 .map(authority -> getRolePrefix() + authority)
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
     }
 
     /**
@@ -184,7 +188,7 @@ public class CouchRestSpelRoot
      */
     @Override
     public boolean hasAnyAuthority(String... authorities) {
-        final List<String> grantedAuthorities = getAuthorities();
+        final Set<String> grantedAuthorities = getAuthorities();
 
         for (final String authority : authorities) {
             if (grantedAuthorities.contains(authority)) return true;
@@ -212,7 +216,7 @@ public class CouchRestSpelRoot
      */
     @Override
     public boolean hasAnyRole(String... roles) {
-        final List<String> grantedRoles = getRoles();
+        final Set<String> grantedRoles = getRoles();
 
         for (final String role : roles) {
             if (grantedRoles.contains(role)) return true;
@@ -305,4 +309,10 @@ public class CouchRestSpelRoot
                 permission
         );
     }
+
+    @Autowired(required = false)
+    public void setTrustResolver(AuthenticationTrustResolver trustResolver) {
+        this.trustResolver = trustResolver;
+    }
+
 }

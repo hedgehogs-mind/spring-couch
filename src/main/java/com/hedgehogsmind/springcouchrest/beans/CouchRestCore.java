@@ -159,6 +159,8 @@ public class CouchRestCore {
                 couchRestConfiguration.getSpringElEvaluationRootObject()
                 .orElse(new CouchRestSpelRoot());
 
+        applicationContext.getAutowireCapableBeanFactory().autowireBean(this.couchRestSpelEvaluationRootObject);
+
         this.couchRestSpelEvaluationContext.setRootObject(
                 this.couchRestSpelEvaluationRootObject
         );
