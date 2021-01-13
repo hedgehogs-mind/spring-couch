@@ -1,4 +1,4 @@
-package com.hedgehogsmind.springcouchrest.integration.env;
+package com.hedgehogsmind.springcouchrest.integration.env.crud;
 
 import com.hedgehogsmind.springcouchrest.annotations.CouchRest;
 

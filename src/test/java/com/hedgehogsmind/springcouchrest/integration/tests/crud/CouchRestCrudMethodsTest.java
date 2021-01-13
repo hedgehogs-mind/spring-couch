@@ -2,14 +2,12 @@ package com.hedgehogsmind.springcouchrest.integration.tests.crud;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hedgehogsmind.springcouchrest.integration.CouchRestIntegrationTestBase;
-import com.hedgehogsmind.springcouchrest.integration.env.TestNoteEntity;
-import com.hedgehogsmind.springcouchrest.integration.env.TestNoteEntityRepository;
+import com.hedgehogsmind.springcouchrest.integration.env.crud.TestNoteEntity;
 import com.hedgehogsmind.springcouchrest.rest.problemdetail.problems.CouchRestProblems;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.junit.jupiter.api.*;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;

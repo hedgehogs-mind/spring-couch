@@ -23,26 +23,22 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.annotation.DirtiesContext;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Configuration
+@DirtiesContext
 public abstract class CouchRestIntegrationTestBase {
 
     protected static final String LOGIN_URL = "/do_login";
@@ -221,44 +217,6 @@ public abstract class CouchRestIntegrationTestBase {
         userDetailsService.testUser.authorities = new HashSet<>(
                 Arrays.asList(authorities)
         );
-    }
-
-    /**
-     * Fetches current authentication via {@link SecurityContextHolder}.
-     *
-     * @return Current authentication or empty.
-     */
-    protected Optional<Authentication> getAuthentication() {
-        return Optional.ofNullable(
-                SecurityContextHolder.getContext().getAuthentication()
-        );
-    }
-
-    /**
-     * Adds a simple {@link UsernamePasswordAuthenticationToken} with the given authorities
-     * to the {@link SecurityContextHolder}.
-     *
-     * @param authorities Authorities the (new) authentication shall get.
-     */
-    protected void setAuthentication(final String... authorities) {
-        SecurityContextHolder.getContext().setAuthentication(
-                new UsernamePasswordAuthenticationToken(
-                        "tester",
-                        "tester@password",
-                        authorities == null ?
-                            new ArrayList<>() :
-                            Arrays.asList(authorities).stream()
-                                .map(authority -> new SimpleGrantedAuthority(authority))
-                                .collect(Collectors.toList())
-                )
-        );
-    }
-
-    /**
-     * Removes authentication from {@link SecurityContextHolder}.
-     */
-    protected void removeAuthentication() {
-        SecurityContextHolder.getContext().setAuthentication(null);
     }
 
     /**

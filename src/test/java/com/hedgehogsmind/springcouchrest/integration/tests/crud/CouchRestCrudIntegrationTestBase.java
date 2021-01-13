@@ -1,8 +1,8 @@
 package com.hedgehogsmind.springcouchrest.integration.tests.crud;
 
 import com.hedgehogsmind.springcouchrest.integration.CouchRestIntegrationTestBase;
-import com.hedgehogsmind.springcouchrest.integration.env.TestNoteEntity;
-import com.hedgehogsmind.springcouchrest.integration.env.TestNoteEntityRepository;
+import com.hedgehogsmind.springcouchrest.integration.env.crud.TestNoteEntity;
+import com.hedgehogsmind.springcouchrest.integration.env.crud.TestNoteEntityRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,7 +1,7 @@
 package com.hedgehogsmind.springcouchrest.integration.tests;
 
 import com.hedgehogsmind.springcouchrest.integration.CouchRestIntegrationTestBase;
-import com.hedgehogsmind.springcouchrest.integration.env.EntityWithUnhandledIdType;
+import com.hedgehogsmind.springcouchrest.integration.env.crud.EntityWithUnhandledIdType;
 import com.hedgehogsmind.springcouchrest.rest.problemdetail.problems.CouchRestProblems;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;

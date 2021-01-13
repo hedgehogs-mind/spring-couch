@@ -47,7 +47,6 @@ import java.util.stream.Collectors;
 public class CouchRestSpelRoot
         implements SecurityExpressionOperations {
 
-
     private AuthenticationTrustResolver trustResolver =
             new AuthenticationTrustResolverImpl();
 

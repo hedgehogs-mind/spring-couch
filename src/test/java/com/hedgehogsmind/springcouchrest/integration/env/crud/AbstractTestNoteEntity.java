@@ -1,16 +1,13 @@
-package com.hedgehogsmind.springcouchrest.integration.env;
-
-import com.hedgehogsmind.springcouchrest.annotations.CouchRest;
+package com.hedgehogsmind.springcouchrest.integration.env.crud;
 
 import javax.persistence.Column;
-import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.MappedSuperclass;
 import java.util.Objects;
 
-@Entity
-@CouchRest
-public class TestNoteEntity {
+@MappedSuperclass
+public class AbstractTestNoteEntity {
 
     @Id
     @GeneratedValue
@@ -25,10 +22,10 @@ public class TestNoteEntity {
     @Column
     public int rating;
 
-    public TestNoteEntity() {
+    public AbstractTestNoteEntity() {
     }
 
-    public TestNoteEntity(String title, String content, int rating) {
+    public AbstractTestNoteEntity(String title, String content, int rating) {
         this.title = title;
         this.content = content;
         this.rating = rating;
@@ -38,7 +35,7 @@ public class TestNoteEntity {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        TestNoteEntity that = (TestNoteEntity) o;
+        AbstractTestNoteEntity that = (AbstractTestNoteEntity) o;
         return id == that.id && rating == that.rating && Objects.equals(title, that.title) && Objects.equals(content, that.content);
     }
 
@@ -49,7 +46,7 @@ public class TestNoteEntity {
 
     @Override
     public String toString() {
-        return "TestNoteEntity{" +
+        return "AbstractTestNoteEntity{" +
                 "id=" + id +
                 ", title='" + title + '\'' +
                 ", content='" + content + '\'' +
