@@ -1,12 +1,9 @@
 - security docs
-  - @CouchRest > attribute `checkBaseSecurityRule`
-  - security check flow
+  - default expressions
   - custom root object for spel evaluation
     - authentication trust resolver
     - permission evaluator
     - role prefix
-    - custom extension
-    - available expressions
   
 - config docs
   - spring el root object
