@@ -1,9 +1,10 @@
 # Security with CouchRest
 
-CouchRest emphasizes security a lot. This is done by using Spring Expression Language. Most often you will want
+CouchRest emphasizes security a lot. This is done by specifying SpringEL expressions. Most often you will want
 to query a Spring Security state.
 
-CouchRest needs a base security definition.
+In this document we will cover the basics of CouchRest's security concept and how you can control the security
+restrictions.
 
 ## Request rejection
 
@@ -12,7 +13,7 @@ a 403 response will be sent to the client.
 
 ## Rule interpretation
 
-All security rules must be written as SpringEL expression. They shall produce a boolean result.
+All security rules must be written as SpringEL expressions. They shall produce a boolean result.
 The result will be interpreted as follows:
 
 - `true`: Access check succeeded, and the request will be handled.
@@ -20,7 +21,7 @@ The result will be interpreted as follows:
 
 ## Security flow
 
-The following image shows CouchRest's two stage security model. If you prefer a textual description or need one, 
+The following image shows CouchRest's two stage security model. If you prefer a textual description, 
 skip the image, there is a transcription of what the image shows.
 
 ![Two staged security flow](../imgs/security_flow.png)
@@ -42,13 +43,13 @@ After handling the base security rule stuff (security stage one), CouchRest chec
 has an own security rule defined by the developer/you. In case there is one, it will be evaluated. If not,
 the default endpoint security rule specified in the `CouchRestConfiguration` will be evaluated.
 
-In either the case: If the result of the evaluated rule is true, CouchRest executes the rest of the endpoint handler
+Either way: If the result of the evaluated rule is true, CouchRest executes the rest of the endpoint handler
 and returns the result to the client. If the result is false, an "access forbidden" error will be sent to the
 client. That was the last stage – security stage two.
 
 ## SpringEL expressions for rules
 
-Here we will explain the most important expressions which are available in rules. We will also discuss, how
+Here we will explain the most important expressions which are available for rules. We will also discuss, how
 you can extend the dictionary of expressions!
 
 ### Where are expressions defined
@@ -63,20 +64,44 @@ from Spring Security.
 
 This root object can be replaced/extended in the `CouchRestConfiguration`. More on that later in "Extend expressions".
 
-### Default expression
+### Default expressions
 
+Simple rules:
+- `permitAll()`: Always returns true.
+- `denyAll()`: Always returns false.
+  
+Getters:
 
-TODO @peter
+- `getAuthentication()` or `authentication`: Retrieves the current authentication from Spring Security's request context. Could return null.
+- `getPrincipal`: Returns principal of authentication. Can return null, if authentication is null.
+- `getAuthorities()` or `authorities`: List of authorities of the current authentication. Empty if there is no authentication.
+- `getRoles()` or `roles`: Returns alls authorities with the prefix `getRolePrefix()` (by default "ROLE_").
+  
+Permission checkers:
+- `hasAuthority(String authority)`: Checks if the current authentication, if present, has the given authority (returns true), or not (returns false). 
+- `hasAnyAuthority(String... authorities)`: Returns true, if `hasAuthority()` returns true for at least one of the given authorities.
+- `hasRole(String role)`: Same as `hasAuthority()` but for roles (with role prefix).
+- `hasAnyRole(String... roles)`: Sames as `hasAnyAuthority()` but for roles (with role prefix).
+- `hasPermission(Object target, Object permission)`: Delegates call to PermissionEvaluator with current authentication.
+- `hasPermission(Object targetId, String targetType, Object permission)`: Delegates call to PermissionEvaluator with current authentication.
 
+State checkers:
+- `isAnonymous()`: Asks the AuthenticationTrustResolver if the current authentication is anonymous or not.
+- `isAuthenticated()`: If there currently is an authentication object, the result of its method `isAuthenticated()` will be returned. Otherwise false.
+- `isRememberMe()`: Asks the AuthenticationTrustResolver if the current authentication has the "remember me" flag turned on.
+- `isFullyAuthenticated()`: Returns true if neither remember me is turned on nor if the authentication is anonymous. Otherwise false.
 
 ### Extend expressions
 
-You may want to add own expressions. Therefore, you need to extend the SpringEL evaluators root object. Please ensure
+You may want to add own expressions. Therefore, you need to extend the SpringEL evaluator root object. Please ensure
 your read the section "Where are expressions defined".
 
 Take your `CouchRestConfiguration` and override the method `getSpringElEvaluationRootObject()`. There you can either
-return an extended class or instance an instance of `CouchRestSpelRoot` with additional methods via anonymous inner
-declaration:
+return an extended class or an instance of `CouchRestSpelRoot` with additional methods via anonymous inner
+declaration.
+
+__Super important note/tip:__ *The root object will be autowired* by CouchRest. This means, that you can use dependency injection
+via the Constructor or `@Autowired` fields or setters!
 
 Example using anonymous inner declaration:
 
@@ -105,19 +130,27 @@ public MyCouchRestConfig implements CouchRestConfiguration {
 
 ### Further customization
 
-TODO @peter:
+Within the section "Default expressions" you may have heart of "AuthenticationTrustResolver", "PermissionEvaluator" or
+"Role prefix". The first two are Spring Security elements used for evaluating states of the current authentication.
 
-- custom root object for spel evaluation
-    - authentication trust resolver
-    - permission evaluator
-    - role prefix
+AuthenticationTrustResolver: By default an instance of `AuthenticationTrustResolverImpl` will be used. In case there
+is a bean within the Spring application context, it will be injected via dependency injection, and it will be used
+instead of the default instance (remember what we said about the root object earlier: 
+it will be autowired by CouchRest).
+
+PermissionEvaluator: By default an instance of `DenyAllPermissionEvaluator` will be used. If you want an
+own permission evaluator, replace/extend the root object as described earlier and overwrite the method
+`getPermissionEvaluator()`. It is recommended to instantiate an instance only once and return that instance in the
+getter.
+
+Role prefix: You may use an other role prefix other than `ROLE_`. Just extend/replace the root object and
+overwrite the method `getRolePrefix()`.
 
 ## Rule definitions
 
 ### Base Security
 
-You can specify a global security rule for all CouchRest endpoints, in case no more detailed
-rules exist for the endpoints.
+You can specify a global security rule for all CouchRest endpoints.
 
 This is done by Specifying a base security rule in SpringEL in your `CouchRestConfiguration`:
 
@@ -137,15 +170,15 @@ public MyCouchRestConfig implements CouchRestConfiguration {
 }
 ```
 
-__I encourage you__ to choose a rather restrictive base rule. This eliminates unexpected access of endpoints you did
-forget to secure with an own rule!
+__I encourage you__ to choose a rather restrictive base rule.
 
-I further encourage you to go by _"restrictive global rule and explicitly open"_. 
+_Hint:_ Checking the base security rule can be disabled by setting the argument `checkBaseSecurityRule`
+of the resource's `@CouchRest` annotation to `false`.
 
 ### Default endpoint security rule
 
 Within CouchRest you can always define endpoint/method level security rules. They represent the second security
-stage. In case you have not specified an own rule for an endpoint, a default one will be checked.
+stage. In case you have not specified an own rule for an endpoint, a default endpoint rule will be checked.
 
 This default endpoint rule must be defined in the CouchRestConfiguration:
 
@@ -165,7 +198,7 @@ public MyCouchRestConfig implements CouchRestConfiguration {
 }
 ```
 
-__As always: per as restrictive as possible!__
+__As always: As restrictive as possible!__
 
 ### Crud Security
 
