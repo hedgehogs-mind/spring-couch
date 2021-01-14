@@ -107,7 +107,8 @@ Example using anonymous inner declaration:
 
 ```
 @Component
-public MyCouchRestConfig implements CouchRestConfiguration {
+public class MyCouchRestConfig
+       extends CouchRestConfigurationAdapter {
 
     ...
     
@@ -156,7 +157,8 @@ This is done by Specifying a base security rule in SpringEL in your `CouchRestCo
 
 ```
 @Component
-public MyCouchRestConfig implements CouchRestConfiguration {
+public class MyCouchRestConfig 
+       extends CouchRestConfigurationAdapter {
 
     ...
     
@@ -184,7 +186,8 @@ This default endpoint rule must be defined in the CouchRestConfiguration:
 
 ```
 @Component
-public MyCouchRestConfig implements CouchRestConfiguration {
+public class MyCouchRestConfig
+       extends CouchRestConfigurationAdapter {
 
     ...
     
@@ -200,7 +203,7 @@ public MyCouchRestConfig implements CouchRestConfiguration {
 
 __As always: As restrictive as possible!__
 
-### Crud Security
+### CRUD Security
 
 The annotation `@CouchRest` on a Repository or an Entity class publishes the (corresponding) Entity via Rest.
 It creates endpoints for creating entities of that type, fetching and deleting them. You can specify security rules

@@ -1,22 +1,9 @@
-- security docs
-  - default expressions
-  - custom root object for spel evaluation
-    - authentication trust resolver
-    - permission evaluator
-    - role prefix
-  
-- config docs
-  - spring el root object
-  - adapter
-  - security rule default
-  - security rule global
+- docs for error handling > reference to ProblemDetails
 
 - build.gradle > versioned dependencies
 
 - CouchRestHandlerMapping
   - Logging
-  
-- crud doc
   
 - must the base path start with a slash?
 - could the base path be "/" ?

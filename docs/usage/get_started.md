@@ -53,32 +53,32 @@ Caused by: com.hedgehogsmind.springcouchrest.beans.exceptions.NoConfigurationFou
 	...
 ```
 
-__You need to provide a `CouchRestConfiguration` Bean!__
+__You need to provide a `CouchRestConfiguration` Bean!__ For convenience, you can extend the `CouchRestConfigurationAdapter`.
+
+*For our first demo, we will disable all security restrictions.* __This is not recommended for normal usage!__ Please
+revert this later. Also read the [security documentation](security.md)!
 
 Here is an example:
 
 ```
 @Component
 public class MyCouchRestConfiguration
-       implements CouchRestConfiguration {
-
-    @Override
-    public String getCouchRestBasePath() {
-        return "/api/couchrest/";
-    }
-
-    @Override
-    public Optional<ObjectMapper> getCouchRestObjectMapper() {
-        return Optional.empty();
-    }
+       extends CouchRestConfigurationAdapter {
     
-    ...
+    @Override
+    public String getBaseSecurityRule() {
+        return "permitAll()";
+    }
+
+    @Override
+    public String getDefaultEndpointSecurityRule() {
+        return "permitAll()";
+    }
     
 }
 ```
 
-That's it! For more information on what each setting does,
-examine the JavaDocs of `CouchRestConfiguration` (TODO @peter: reference JavaDocs).
+For more on that checkout the [configuration docs](configuration.md) as well as the [security docs](security.md).
 
 # 4. Level up your first entity!
 
@@ -105,8 +105,7 @@ public class Note {
 }
 ```
 
-__Assuming that you configured the CouchRest BasePath to be `/api/`, you can now perform `GET /api/note` and you will
-get all note instances!__
+__You can now perform `GET /api/note` and you will get all note instances!__
 
 ## Repository level
 
@@ -148,4 +147,5 @@ public class Address {
 Go ahead and read the following documentation pages, to better understand, what CouchRest is capable of:
 
 - [CRUD operations for entities](crud_operations.md)
+- [Configuration of CouchRest](configuration.md)
 - [Security](security.md)
