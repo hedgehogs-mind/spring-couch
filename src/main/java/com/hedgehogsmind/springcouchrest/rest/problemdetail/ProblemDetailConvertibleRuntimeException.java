@@ -4,19 +4,22 @@ import java.util.Locale;
 
 /**
  * <p>
- *     Base for all exceptions which can be returned as {@link ProblemDetail}s to the client.
+ * Base for all exceptions which can be returned as {@link ProblemDetail}s to the client.
  * </p>
  *
  * <p>
- *     There are some ways to implement {@link #toProblemDetail(Locale)}:
- *     <ul>
- *         <li>Create a new {@link ProblemDetailDto}.</li>
- *         <li>Use a {@link I18nProblemDetailDescriptor} and its method {@link I18nProblemDetailDescriptor#toProblemDetail(Locale)}.</li>
- *         <li>Returns some other instance of type {@link ProblemDetail}.</li>
- *     </ul>
+ * There are some ways to implement {@link #toProblemDetail(Locale)}:
  * </p>
+ *
+ * <ul>
+ *     <li>Create a new {@link ProblemDetailDto}.</li>
+ *     <li>Use a {@link I18nProblemDetailDescriptor} and its method {@link I18nProblemDetailDescriptor#toProblemDetail(Locale)}.</li>
+ *     <li>Returns some other instance of type {@link ProblemDetail}.</li>
+ * </ul>
  */
-public abstract class ProblemDetailConvertibleRuntimeException extends RuntimeException implements I18nProblemDetailConvertible {
+public abstract class ProblemDetailConvertibleRuntimeException
+        extends RuntimeException
+        implements I18nProblemDetailConvertible {
 
     public ProblemDetailConvertibleRuntimeException() {
     }
@@ -33,7 +36,10 @@ public abstract class ProblemDetailConvertibleRuntimeException extends RuntimeEx
         super(cause);
     }
 
-    public ProblemDetailConvertibleRuntimeException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+    public ProblemDetailConvertibleRuntimeException(String message,
+                                                    Throwable cause,
+                                                    boolean enableSuppression,
+                                                    boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
 

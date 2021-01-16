@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 
 public class ProblemDetailsDocumentedTest {
 
-    private static final String LINK_FILE_TO_PROBLEM_DETAILS_DOC = "LINK_ProblemDetails.md";
+    private static final String LINK_FILE_TO_PROBLEM_DETAILS_DOC = "ProblemDetails.md";
 
     protected URL getLinkFileURL() {
         return Thread.currentThread().getContextClassLoader().getResource(LINK_FILE_TO_PROBLEM_DETAILS_DOC);

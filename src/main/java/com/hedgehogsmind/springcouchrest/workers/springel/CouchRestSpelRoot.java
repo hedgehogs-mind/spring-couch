@@ -27,22 +27,22 @@ import java.util.stream.Collectors;
  * done by implementing the interface {@link SecurityExpressionOperations}. All methods
  * operate on the current authentication held by the {@link SecurityContextHolder}.
  * There are three methods for security customizations:
- *     <ul>
- *         <li>{@link #getAuthenticationTrustResolver()}: has an impact on {@link #isAnonymous()},
- *         {@link #isRememberMe()} and {@link #isFullyAuthenticated()}. Defaults to the standard impl.
- *         {@link AuthenticationTrustResolverImpl}.
- *         </li>
- *
- *         <li>{@link #getPermissionEvaluator()}: has an impact on {@link #hasPermission(Object, Object)}
- *         and {@link #hasPermission(Object, String, Object)}. Defaults to a {@link DenyAllPermissionEvaluator} instance!
- *         </li>
- *
- *         <li>
- *             {@link #getRolePrefix()}: has an impact on {@link #hasRole(String)},
- *             {@link #hasAnyRole(String...)} and {@link #getRoles()}.
- *         </li>
- *     </ul>
  * </p>
+ * <ul>
+ *     <li>{@link #getAuthenticationTrustResolver()}: has an impact on {@link #isAnonymous()},
+ *     {@link #isRememberMe()} and {@link #isFullyAuthenticated()}. Defaults to the standard impl.
+ *     {@link AuthenticationTrustResolverImpl}.
+ *     </li>
+ *
+ *     <li>{@link #getPermissionEvaluator()}: has an impact on {@link #hasPermission(Object, Object)}
+ *     and {@link #hasPermission(Object, String, Object)}. Defaults to a {@link DenyAllPermissionEvaluator} instance!
+ *     </li>
+ *
+ *     <li>
+ *         {@link #getRolePrefix()}: has an impact on {@link #hasRole(String)},
+ *         {@link #hasAnyRole(String...)} and {@link #getRoles()}.
+ *     </li>
+ * </ul>
  */
 public class CouchRestSpelRoot
         implements SecurityExpressionOperations {

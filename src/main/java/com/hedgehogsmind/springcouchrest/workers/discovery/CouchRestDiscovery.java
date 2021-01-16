@@ -42,11 +42,12 @@ public class CouchRestDiscovery {
 
     /**
      * <p>
-     *     Fetches all beans with {@link CouchRest} annotation and calls {@link #addBean(Object, EntityManager)} for each
-     *     single bean.
+     * Fetches all beans with {@link CouchRest} annotation and calls {@link #addBean(Object, EntityManager)} for each
+     * single bean.
      * </p>
+     *
      * @param applicationContext Used to retrieve beans.
-     * @param entityManager Uses for creating {@link DiscoveredUnit}s.
+     * @param entityManager      Uses for creating {@link DiscoveredUnit}s.
      */
     protected void discoverCouchRestBeans(
             final ApplicationContext applicationContext,
@@ -58,22 +59,23 @@ public class CouchRestDiscovery {
 
     /**
      * <p>
-     *     Depending on the type of the bean, differed {@link DiscoveredUnit}
-     *     instances will be created and added to internal sets.
+     * Depending on the type of the bean, differed {@link DiscoveredUnit}
+     * instances will be created and added to internal sets.
      * </p>
      *
      * <p>
-     *     Currently supported beans:
+     * Currently supported beans:
+     * </p>
+     *
      *     <ul>
      *         <li>{@link CrudRepository}</li>
      *     </ul>
-     * </p>
      *
      * <p>
      *     If a bean type is not supported, this method throws a {@link UnsupportedBeanTypeTaggedException}.
      * </p>
      *
-     * @param bean Bean to add as discovered unit.
+     * @param bean          Bean to add as discovered unit.
      * @param entityManager EntityManager for {@link javax.persistence.metamodel.EntityType} retrieval.
      * @throws UnsupportedBeanTypeTaggedException if bean is not supported.
      */
@@ -81,7 +83,7 @@ public class CouchRestDiscovery {
             final Object bean,
             final EntityManager entityManager
     ) {
-        if ( bean instanceof CrudRepository ) {
+        if (bean instanceof CrudRepository) {
 
             discoveredCrudRepositories.add(
                     beanToDiscoveredCrudRepository(
@@ -92,19 +94,19 @@ public class CouchRestDiscovery {
 
         } else {
             throw new UnsupportedBeanTypeTaggedException(
-                    "@CouchRest not supported for bean of type "+bean.getClass()
+                    "@CouchRest not supported for bean of type " + bean.getClass()
             );
         }
     }
 
     /**
      * <p>
-     *     Fetches entity class, entity type, couch rest annotation and couch rest modifier annos and creates new
-     *     discovered instance.
+     * Fetches entity class, entity type, couch rest annotation and couch rest modifier annos and creates new
+     * discovered instance.
      * </p>
      *
      * @param crudRepository CrudRepository to created discovered unit instance for.
-     * @param entityManager EntityManager. Used for entity type retrieval.
+     * @param entityManager  EntityManager. Used for entity type retrieval.
      * @return New CrudRepo discovered unit instance.
      */
     protected DiscoveredCrudRepository beanToDiscoveredCrudRepository(
@@ -146,7 +148,7 @@ public class CouchRestDiscovery {
                             )
                     );
 
-            if ( tagAnnotation.isPresent() ) {
+            if (tagAnnotation.isPresent()) {
                 discoveredEntities.add(
                         new DiscoveredEntity(
                                 tagAnnotation.get().getAnnotation(),

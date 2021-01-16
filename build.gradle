@@ -1,26 +1,51 @@
 plugins {
+	id 'java'
+	id 'java-library'
+
 	id 'org.springframework.boot' version '2.4.0'
 	id 'io.spring.dependency-management' version '1.0.10.RELEASE'
-	id 'java'
+
+	id "com.jfrog.bintray" version "1.8.5"
+
+	id 'maven'
+	id 'maven-publish'
 }
 
+String versionName = '0.0.1-ALPHA'
+
 group = 'com.hedgehogs-mind'
-version = '0.0.1-SNAPSHOT'
+version = versionName
 sourceCompatibility = '15'
+
+java {
+	withSourcesJar()
+	withJavadocJar()
+}
+
+jar {
+	enabled = true
+}
+
+bootJar {
+	enabled = false
+}
 
 repositories {
 	mavenCentral()
+	jcenter()
 }
 
-dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'org.springframework.boot:spring-boot-starter-jdbc'
-	implementation 'org.springframework.boot:spring-boot-starter-validation'
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation 'net.jodah:typetools:0.6.2'
-	implementation 'org.springframework.security:spring-security-core'
 
-	runtimeOnly 'com.h2database:h2'
+
+dependencies {
+	api 'org.springframework.boot:spring-boot-starter-data-jpa'
+	api 'org.springframework.boot:spring-boot-starter-jdbc'
+	api 'org.springframework.boot:spring-boot-starter-validation'
+	api 'org.springframework.boot:spring-boot-starter-web'
+	api 'net.jodah:typetools:0.6.2'
+	api 'org.springframework.security:spring-security-core'
+
+	testImplementation 'com.h2database:h2'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test', {
 		exclude group: 'com.vaadin.external.google', module: 'android-json' // clashes with org.json
 	}
@@ -30,19 +55,80 @@ dependencies {
 	testImplementation 'org.mockito:mockito-core:3.6.0'
 	testImplementation 'com.squareup.okhttp3:okhttp:4.2.0'
 
-
-
-
-
-
-
-	compileOnly 'org.projectlombok:lombok:1.18.16'
-	annotationProcessor 'org.projectlombok:lombok:1.18.16'
-
 	// https://mvnrepository.com/artifact/org.json/json
-	compile group: 'org.json', name: 'json', version: '20201115'
+	testCompile group: 'org.json', name: 'json', version: '20201115'
 }
 
 test {
 	useJUnitPlatform()
 }
+
+// Create the pom configuration:
+def pomConfig = {
+	licenses {
+		license {
+			name "MIT License"
+			url "http://www.opensource.org/licenses/mit-license.php"
+			distribution "repo"
+		}
+	}
+	developers {
+		developer {
+			id "hedgehogs-minde"
+			name "Peter Kuhmann"
+			email "peter@hedgehogs-mind.com"
+		}
+	}
+
+	scm {
+		url "https://github.com/hedgehogs-mind/spring-couch-rest"
+	}
+}
+
+// Create the publication with the pom configuration:
+publishing {
+	publications {
+		MyPublication(MavenPublication) {
+			from components.java
+//			artifact sourcesJar
+//			artifact javadocJar
+			groupId 'com.hedgehogs-mind'
+			artifactId 'spring-couch-rest'
+			version versionName
+			pom.withXml {
+				def root = asNode()
+				root.appendNode('description', 'CouchRest is a plugin for Spring enabling fast resource exposure via REST')
+				root.appendNode('name', 'Spring CouchRest')
+				root.appendNode('url', 'https://github.com/hedgehogs-mind/spring-couch-rest')
+				root.children().last() + pomConfig
+			}
+		}
+	}
+}
+
+
+bintray {
+	user = 'hedgehogs-mind'
+	key = 'empty'
+//	key = '' // TODO @peter
+//	key = System.getenv('BINTRAY_KEY')
+
+	publications = ['MyPublication']
+
+	pkg {
+		repo = 'hedgehogs-mind-java'
+		name = 'spring-couch-rest'
+		userOrg = 'hedgehogs-mind'
+		licenses = ['MIT']
+		vcsUrl = 'https://github.com/hedgehogs-mind/spring-couch-rest.git'
+
+		version {
+			name = versionName
+			desc = "Spring Plugin to publish resources via REST conveniently"
+			released = new Date()
+			vcsTag = versionName
+			attributes = new HashMap<>()
+		}
+	}
+}
+

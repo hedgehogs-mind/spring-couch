@@ -1,1 +1,0 @@
-../../../docs/technical/ProblemDetails.md

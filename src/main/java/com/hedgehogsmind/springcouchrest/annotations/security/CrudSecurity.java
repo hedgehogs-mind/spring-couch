@@ -18,13 +18,13 @@ import java.lang.annotation.Target;
  *     All members of this annotation declare security rules for different crud methods.
  *     <b>In case any of the rules is empty, the rule {@link CouchRestConfiguration#getBaseSecurityRule()}
  *     will be used.</b> We explain the rules in more detail:
+ * </p>
  *
  *     <ul>
  *         <li>{@link #read()}: Rule protects a 'GET all' or 'GET one by id' request.</li>
  *         <li>{@link #saveUpdate()}: Rule protects a 'POST new' or 'POST update by id' request.</li>
  *         <li>{@link #delete()}: Rule protects a 'DELETE one by id' request.</li>
  *     </ul>
- * </p>
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

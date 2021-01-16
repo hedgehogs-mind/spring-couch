@@ -87,13 +87,13 @@ public class CouchRestCore {
 
     /**
      * <p>
-     *     Initializes:
-     *     <ul>
-     *         <li>{@link #getCouchRestSpelExpressionParser()}</li>
-     *         <li>{@link #getCouchRestSpelEvaluationContext()}</li>
-     *     </ul>
+     * Initializes:
      * </p>
      *
+     * <ul>
+     *     <li>{@link #getCouchRestSpelExpressionParser()}</li>
+     *     <li>{@link #getCouchRestSpelEvaluationContext()}</li>
+     * </ul>
      */
     protected void init() {
         this.couchRestSpelExpressionParser = new SpelExpressionParser();
@@ -112,9 +112,9 @@ public class CouchRestCore {
             final CouchRestConfiguration bean = applicationContext.getBean(CouchRestConfiguration.class);
             this.couchRestConfiguration = new ValidatedAndNormalizedCouchRestConfiguration(bean);
 
-        } catch ( NoUniqueBeanDefinitionException e ) {
+        } catch (NoUniqueBeanDefinitionException e) {
             throw new NoUniqueConfigurationFoundException("No unique CouchRestConfigurations found.");
-        } catch ( NoSuchBeanDefinitionException e ) {
+        } catch (NoSuchBeanDefinitionException e) {
             throw new NoConfigurationFoundException("No CouchRestConfiguration found.");
         }
     }
@@ -139,9 +139,9 @@ public class CouchRestCore {
      * Sets object mapper either to one specified in {@link CouchRestConfiguration}, to global one, or creates a new one.
      */
     protected void setupObjectMapper() {
-        if ( couchRestConfiguration.getCouchRestObjectMapper().isPresent() ) {
+        if (couchRestConfiguration.getCouchRestObjectMapper().isPresent()) {
             this.couchRestObjectMapper = couchRestConfiguration.getCouchRestObjectMapper().get();
-        } else if ( globalObjectMapper.isPresent() ) {
+        } else if (globalObjectMapper.isPresent()) {
             this.couchRestObjectMapper = globalObjectMapper.get();
         } else {
             this.couchRestObjectMapper = new ObjectMapper();
@@ -157,7 +157,7 @@ public class CouchRestCore {
     protected void setupSpringElEvaluationRootObject() {
         this.couchRestSpelEvaluationRootObject =
                 couchRestConfiguration.getSpringElEvaluationRootObject()
-                .orElse(new CouchRestSpelRoot());
+                        .orElse(new CouchRestSpelRoot());
 
         applicationContext.getAutowireCapableBeanFactory().autowireBean(this.couchRestSpelEvaluationRootObject);
 
@@ -176,10 +176,10 @@ public class CouchRestCore {
 
         final Object testResult = this.couchRestBaseSecurityRule.getValue(couchRestSpelEvaluationContext);
 
-        if ( !(testResult instanceof Boolean) ) {
+        if (!(testResult instanceof Boolean)) {
             throw new BaseSecurityRuleDoesNotReturnBooleanValueException(
-                    "Base security rule did not return boolean result. Instead it was of type: "+
-                    (testResult != null ? testResult.getClass() : "null")
+                    "Base security rule did not return boolean result. Instead it was of type: " +
+                            (testResult != null ? testResult.getClass() : "null")
             );
         }
     }
@@ -195,9 +195,9 @@ public class CouchRestCore {
 
         final Object testResult = this.couchRestDefaultEndpointSecurityRule.getValue(couchRestSpelEvaluationContext);
 
-        if ( !(testResult instanceof Boolean) ) {
+        if (!(testResult instanceof Boolean)) {
             throw new DefaultSecurityRuleDoesNotReturnBooleanValueException(
-                    "Default endpoint security rule did not return boolean result. Instead it was of type: "+
+                    "Default endpoint security rule did not return boolean result. Instead it was of type: " +
                             (testResult != null ? testResult.getClass() : "null")
             );
         }
@@ -256,7 +256,7 @@ public class CouchRestCore {
                             .filter(dr -> dr.getEntityClass() == discoveredEntity.getEntityClass())
                             .findAny();
 
-            if ( discoveredRepo.isPresent() ) {
+            if (discoveredRepo.isPresent()) {
                 throw new EntityAlreadyManagedByRepositoryException(
                         "Entity '" + discoveredEntity.getEntityClass() + "' has been tagged with @CouchRest but is" +
                                 " already managed by a repository which is also tagged with @CouchRest.\n" +
@@ -304,7 +304,7 @@ public class CouchRestCore {
         final Optional<MappedResource> existingMapping =
                 getMappingByCouchRestResourcePath(path);
 
-        if ( existingMapping.isPresent() ) {
+        if (existingMapping.isPresent()) {
             throw new ResourcePathClashException(
                     "There is a path clash for entity '" + discoveredUnit.getEntityClass() + "'. The path '" + path + "' is already taken.\n" +
                             "Existing mapping's source: " + existingMapping.get().getMappingSource().getTagAnnotationSource() + "\n" +
@@ -323,7 +323,7 @@ public class CouchRestCore {
      * @return Mapping or empty.
      */
     protected Optional<MappedResource> getMappingByCouchRestResourcePath(final String path) {
-        if ( !path.endsWith("/") ) throw new IllegalArgumentException("path must end with trailing slash");
+        if (!path.endsWith("/")) throw new IllegalArgumentException("path must end with trailing slash");
 
         return mappedResources.stream()
                 .filter(m -> m.getResourcePathWithTrailingSlash().equals(path))
@@ -356,7 +356,7 @@ public class CouchRestCore {
      *
      * @param expression Expression to evaluate.
      * @param returnType Expected return type.
-     * @param <R> Type of return type.
+     * @param <R>        Type of return type.
      * @return Return value.
      */
     public <R> R evaluateExpression(final Expression expression, final Class<? extends R> returnType) {

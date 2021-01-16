@@ -114,7 +114,7 @@ public abstract class MappedResource
      * @param request      Request to handle.
      * @param objectMapper ObjectMapper to use for JSON (de-) serialization.
      * @return Result of sub handler.
-     * @throws IllegalAccessException if there is no sub handler for the given request.
+     * @throws IllegalStateException if there is no sub handler for the given request.
      */
     @Override
     public ResponseEntity handle(HttpServletRequest request, ObjectMapper objectMapper) {
