@@ -6,9 +6,26 @@ to query a Spring Security state.
 In this document we will cover the basics of CouchRest's security concept and how you can control the security
 restrictions.
 
+<!-- MDTOC maxdepth:6 firsth1:0 numbering:0 flatten:0 bullets:1 updateOnSave:1 -->
+
+- [Request rejection](#request-rejection)   
+- [Rule interpretation](#rule-interpretation)   
+- [Security flow](#security-flow)   
+- [SpringEL expressions for rules](#springel-expressions-for-rules)   
+   - [Where are expressions defined](#where-are-expressions-defined)   
+   - [Default expressions](#default-expressions)   
+   - [Extend expressions](#extend-expressions)   
+   - [Further customization](#further-customization)   
+- [Rule definitions](#rule-definitions)   
+   - [Base Security](#base-security)   
+   - [Default endpoint security rule](#default-endpoint-security-rule)   
+   - [CRUD Security](#crud-security)   
+
+<!-- /MDTOC -->
+
 ## Request rejection
 
-Generally: In case a request will be rejected by any security rule we explain in this document, 
+Generally: In case a request will be rejected by any security rule we explain in this document,
 a 403 response will be sent to the client.
 
 ## Rule interpretation
@@ -21,7 +38,7 @@ The result will be interpreted as follows:
 
 ## Security flow
 
-The following image shows CouchRest's two stage security model. If you prefer a textual description, 
+The following image shows CouchRest's two stage security model. If you prefer a textual description,
 skip the image, there is a transcription of what the image shows.
 
 ![Two staged security flow](../imgs/security_flow.png)
@@ -34,7 +51,7 @@ When the handler starts executing, CouchRest checks the access privilege of the 
 First CouchRest checks the `@CouchRest` annotation of the resource the request targets.
 In case the argument `checkBaseSecurityRule` of the `@CouchRest` annotation is true,
 CouchRest will evaluate the base security rule specified in the `CouchRestConfiguration`.
-If the result is true, CouchRest proceeds. If it is false, CouchRest will return an 
+If the result is true, CouchRest proceeds. If it is false, CouchRest will return an
 "access forbidden" error to the client.
 
 In case the argument `checkBaseSecurityRule` is false, CouchRest will just skip that step.
@@ -69,16 +86,16 @@ This root object can be replaced/extended in the `CouchRestConfiguration`. More 
 Simple rules:
 - `permitAll()`: Always returns true.
 - `denyAll()`: Always returns false.
-  
+
 Getters:
 
 - `getAuthentication()` or `authentication`: Retrieves the current authentication from Spring Security's request context. Could return null.
 - `getPrincipal`: Returns principal of authentication. Can return null, if authentication is null.
 - `getAuthorities()` or `authorities`: List of authorities of the current authentication. Empty if there is no authentication.
 - `getRoles()` or `roles`: Returns alls authorities with the prefix `getRolePrefix()` (by default "ROLE_").
-  
+
 Permission checkers:
-- `hasAuthority(String authority)`: Checks if the current authentication, if present, has the given authority (returns true), or not (returns false). 
+- `hasAuthority(String authority)`: Checks if the current authentication, if present, has the given authority (returns true), or not (returns false).
 - `hasAnyAuthority(String... authorities)`: Returns true, if `hasAuthority()` returns true for at least one of the given authorities.
 - `hasRole(String role)`: Same as `hasAuthority()` but for roles (with role prefix).
 - `hasAnyRole(String... roles)`: Sames as `hasAnyAuthority()` but for roles (with role prefix).
@@ -111,19 +128,19 @@ public class MyCouchRestConfig
        extends CouchRestConfigurationAdapter {
 
     ...
-    
+
     @Override
     public Optional<Object> getSpringElEvaluationRootObject() {
         return new CouchRestSpelRoot() {
-        
+
             public void isSuperUser() {
-                // Here you can literally do everything you want 
+                // Here you can literally do everything you want
                 return getAuthentication() instanceOf MySuperUserClass;
             }
-        
+
         };
     }
-  
+
     ...
 
 }
@@ -136,7 +153,7 @@ Within the section "Default expressions" you may have heart of "AuthenticationTr
 
 AuthenticationTrustResolver: By default an instance of `AuthenticationTrustResolverImpl` will be used. In case there
 is a bean within the Spring application context, it will be injected via dependency injection, and it will be used
-instead of the default instance (remember what we said about the root object earlier: 
+instead of the default instance (remember what we said about the root object earlier:
 it will be autowired by CouchRest).
 
 PermissionEvaluator: By default an instance of `DenyAllPermissionEvaluator` will be used. If you want an
@@ -157,18 +174,18 @@ This is done by Specifying a base security rule in SpringEL in your `CouchRestCo
 
 ```
 @Component
-public class MyCouchRestConfig 
+public class MyCouchRestConfig
        extends CouchRestConfigurationAdapter {
 
     ...
-    
+
     @Override
     public String getBaseSecurityRule() {
         return "isAuthenticated() && hasAuthority('API_USER')";
     }
-  
+
     ...
-  
+
 }
 ```
 
@@ -190,14 +207,14 @@ public class MyCouchRestConfig
        extends CouchRestConfigurationAdapter {
 
     ...
-    
+
     @Override
     public String getDefaultEndpointSecurityRule() {
         return "denyAll()";
     }
-  
+
     ...
-  
+
 }
 ```
 
@@ -227,7 +244,7 @@ public class Note {
     @Id
     @GeneratedValue
     public long id;
-    
+
     @Column
     public String content;
 

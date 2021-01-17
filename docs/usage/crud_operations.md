@@ -3,6 +3,19 @@
 This documentation page explains the basic CRUD operations CouchRest makes available. CRUD stands
 for **C**reate, **R**ead, **U**pdate and **D**elete.
 
+<!-- MDTOC maxdepth:6 firsth1:0 numbering:0 flatten:0 bullets:1 updateOnSave:1 -->
+
+- [Assumptions](#assumptions)   
+- [Resource path](#resource-path)   
+- [Operations](#operations)   
+   - [Create](#create)   
+   - [Read](#read)   
+   - [Update](#update)   
+   - [Delete](#delete)   
+- [Security](#security)   
+
+<!-- /MDTOC -->
+
 ## Assumptions
 
 In all examples we assume, that you configured your __CouchRest BasePath__ to be `/api/`!
@@ -17,13 +30,13 @@ public class Tree {
     @Id
     @GeneratedValue
     public long id;
-    
+
     @Column
     public int height;
-    
+
     @Column
     public int leafCount;
-    
+
 }
 ```
 
@@ -48,7 +61,7 @@ An example body:
 ```
 {
     "height": 42,
-    "leafCount": 145 
+    "leafCount": 145
 }
 ```
 
@@ -58,7 +71,7 @@ The response will be the persisted entity in the JSON format:
 {
     "id": 1,
     "height": 42,
-    "leafCount": 145 
+    "leafCount": 145
 }
 ```
 
@@ -159,4 +172,3 @@ Here is an example for deleting the entity with id "1": `DELETE /api/tree/1`. Th
 
 You can secure all CRUD operations individually using the annotation `@CrudSecurity`. Checkout the
 [security documentation](security.md) and especially the section "CRUD Security".
-

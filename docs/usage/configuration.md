@@ -2,6 +2,14 @@
 
 As the title suggests, this documentation tells you everything about configuration possibilities.
 
+<!-- MDTOC maxdepth:6 firsth1:0 numbering:0 flatten:0 bullets:1 updateOnSave:1 -->
+
+- [Bean](#bean)   
+- [Adapter](#adapter)   
+- [Configuration settings](#configuration-settings)   
+
+<!-- /MDTOC -->
+
 ## Bean
 
 For every CouchRest application there must be one Bean which implements the interface `CouchRestConfiguration`.
@@ -18,7 +26,7 @@ So you can simply define your bean as follows:
 @Component
 public class MyConfiguration
        extends CouchRestConfigurationAdapter {
-       
+
 }
 ```
 
