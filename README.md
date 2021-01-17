@@ -3,6 +3,8 @@
 [ ![Download](https://api.bintray.com/packages/hedgehogs-mind/hedgehogs-mind-java/spring-couch-rest/images/download.svg) ](https://bintray.com/hedgehogs-mind/hedgehogs-mind-java/spring-couch-rest/_latestVersion)
 ![branch main](https://github.com/hedgehogs-mind/spring-couch-rest/workflows/branch%20main/badge.svg?branch=main)
 
+![Logo](docs/logo/CouchRest_Logo.png)
+
 <!-- MDTOC maxdepth:6 firsth1:0 numbering:0 flatten:0 bullets:1 updateOnSave:1 -->
 
 - [What is CouchRest](#what-is-couchrest)   
