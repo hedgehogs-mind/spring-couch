@@ -1,19 +1,63 @@
-# Get Started with CouchRest
+# Spring CouchRest
 
-This page is a quick start guide. At the end, you will have published your first entity via REST.
+[ ![Download](https://api.bintray.com/packages/hedgehogs-mind/hedgehogs-mind-java/spring-couch-rest/images/download.svg) ](https://bintray.com/hedgehogs-mind/hedgehogs-mind-java/spring-couch-rest/_latestVersion)
+![branch main](https://github.com/hedgehogs-mind/spring-couch-rest/workflows/branch%20main/badge.svg?branch=main)
 
-# 1. Add dependency
+# What is CouchRest
 
-__TODO @peter__: add docs
+CouchRest is a plugin for Spring. It enables you to publish resources very fast via REST.
 
-# 2. Enable CouchRest
+This project is in its early days, so there are still a lot of features to implement.
+
+# Getting started
+
+## 1. Add dependency
+
+The artifact is currently hosted on JCenter.
+
+Gradle users:
+
+```
+repositories {
+    jcenter()
+}
+
+...
+
+dependencies {
+    implementation 'com.hedgehogs-mind:spring-couch-rest'
+}
+```
+
+Maven users:
+
+```
+<repositories>
+    <repository>
+        <id>jcenter</id>
+        <name>jcenter</name>
+        <url>https://jcenter.bintray.com</url>
+    </repository>
+</repositories>
+
+...
+
+<dependency>
+	<groupId>com.hedgehogs-mind</groupId>
+	<artifactId>spring-couch-rest</artifactId>
+	<version>0.0.1-ALPHA</version>
+	<type>pom</type>
+</dependency>
+```
+
+## 2. Enable CouchRest
 
 In this section, we will show you, how you can enable CouchRest in your Spring (Boot) Application. After this step,
 CouchRest runs but will still throw an error, because we need to add a configuration. This is done in the next step!
 
-## Via an annotation
+### Via an annotation
 
-Take your Spring Boot Application class and open it. Add the annotation `@EnableCouchRest` to the class. 
+Take your Spring Boot Application class and open it. Add the annotation `@EnableCouchRest` to the class.
 
 ```
 ...
@@ -31,7 +75,7 @@ public class MySpringBootApplication {
 }
 ```
 
-## Manually
+### Manually
 
 You can also configure the required beans manually. You need to configure the following beans:
 
@@ -41,9 +85,9 @@ You can also configure the required beans manually. You need to configure the fo
 
 `@EnableCouchRest` does nothing else than importing these classes into the Spring Application (scan).
 
-# 3. Configuration
+## 3. Configuration
 
-After enabling CouchRest, you probably instantly started your application. In case I'm right, 
+After enabling CouchRest, you probably instantly started your application. In case I'm right,
 you experienced the following error:
 
 ```
@@ -80,9 +124,9 @@ public class MyCouchRestConfiguration
 
 For more on that checkout the [configuration docs](configuration.md) as well as the [security docs](security.md).
 
-# 4. Level up your first entity!
+## 4. Level up your first entity!
 
-## Entity level
+### Entity level
 
 Just add the annotation `@CouchRest` to an entity like this:
 
@@ -107,7 +151,7 @@ public class Note {
 
 __You can now perform `GET /api/note` and you will get all note instances!__
 
-## Repository level
+### Repository level
 
 You can also publish a resource via a repository by just adding the annotation `@CouchRest` again:
 
@@ -140,12 +184,12 @@ public class Address {
 }
 ```
 
-# 5.+ Next steps
+## 5.+ Next steps
 
-## Documentation
+### Documentation
 
 Go ahead and read the following documentation pages, to better understand, what CouchRest is capable of:
 
-- [CRUD operations for entities](crud_operations.md)
-- [Configuration of CouchRest](configuration.md)
-- [Security](security.md)
+- [CRUD operations for entities](docs/usage/crud_operations.md)
+- [Configuration of CouchRest](docs/usage/configuration.md)
+- [Security](docs/usage/security.md)

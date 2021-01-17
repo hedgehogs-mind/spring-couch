@@ -1,4 +1,5 @@
 - docs for error handling > reference to ProblemDetails
+- docs for roadmap
 
 - build.gradle > versioned dependencies
 

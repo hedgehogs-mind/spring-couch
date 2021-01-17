@@ -54,8 +54,6 @@ dependencies {
 
 	testImplementation 'org.mockito:mockito-core:3.6.0'
 	testImplementation 'com.squareup.okhttp3:okhttp:4.2.0'
-
-	// https://mvnrepository.com/artifact/org.json/json
 	testCompile group: 'org.json', name: 'json', version: '20201115'
 }
 
@@ -90,8 +88,6 @@ publishing {
 	publications {
 		MyPublication(MavenPublication) {
 			from components.java
-//			artifact sourcesJar
-//			artifact javadocJar
 			groupId 'com.hedgehogs-mind'
 			artifactId 'spring-couch-rest'
 			version versionName
@@ -109,9 +105,7 @@ publishing {
 
 bintray {
 	user = 'hedgehogs-mind'
-	key = 'empty'
-//	key = '' // TODO @peter
-//	key = System.getenv('BINTRAY_KEY')
+	key = System.getenv('BINTRAY_KEY')
 
 	publications = ['MyPublication']
 
