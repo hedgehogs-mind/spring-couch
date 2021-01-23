@@ -209,3 +209,4 @@ Go ahead and read the following documentation pages, to better understand, what 
 - [CRUD operations for entities](docs/usage/crud_operations.md)
 - [Configuration of CouchRest](docs/usage/configuration.md)
 - [Security](docs/usage/security.md)
+- [Roadmap](docs/future/roadmap.md)
