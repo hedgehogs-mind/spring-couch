@@ -1,10 +1,13 @@
 package com.hedgehogsmind.springcouchrest.beans;
 
+import com.hedgehogsmind.springcouchrest.rest.problemdetail.ProblemDetail;
 import com.hedgehogsmind.springcouchrest.rest.problemdetail.ProblemDetailConvertibleRuntimeException;
 import com.hedgehogsmind.springcouchrest.rest.problemdetail.problems.CouchRestProblems;
 import com.hedgehogsmind.springcouchrest.util.RequestUtil;
 import com.hedgehogsmind.springcouchrest.util.ResponseUtil;
 import com.hedgehogsmind.springcouchrest.workers.mapping.MappingHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.servlet.HandlerAdapter;
 import org.springframework.web.servlet.ModelAndView;
@@ -18,6 +21,8 @@ import java.util.Locale;
  */
 public class CouchRestHandlerAdapter
         implements HandlerAdapter {
+
+    private static final Logger log = LoggerFactory.getLogger(CouchRestHandlerAdapter.class);
 
     private final CouchRestCore couchRestCore;
 
@@ -46,12 +51,16 @@ public class CouchRestHandlerAdapter
             ).toResponseEntity();
 
         } catch ( RuntimeException e ) {
-            responseEntityToSend = CouchRestProblems.UNKNOWN_PROBLEM.toProblemDetail(
+            final ProblemDetail exceptionProblemDetail = CouchRestProblems.UNKNOWN_PROBLEM.toProblemDetail(
                     RequestUtil.fetchLocale(request, Locale.ENGLISH)
-            ).toResponseEntity();
-        }
+            );
 
-        // TODO @peter log ProblemDetails and ProblemDetailConvertibles
+            log.error("A CouchRest MappingHandler threw an unknown exception. " +
+                    "Returning ProblemDetail with type 'unknown problem' to client. ProblemDetail instance: "
+                    +exceptionProblemDetail.getInstance(), e);
+
+            responseEntityToSend = exceptionProblemDetail.toResponseEntity();
+        }
 
         ResponseUtil.writeResponseEntity(
                 responseEntityToSend,

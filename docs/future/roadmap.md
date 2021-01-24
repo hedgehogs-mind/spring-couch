@@ -8,12 +8,12 @@ Here we collect features that will definitely be implemented.
 
 | Title | Description | Priority | Initiator | Concept |
 |---|---|---|---|---|
-| Logging | Setup, unhandled exceptions. Maybe even ProblemDetails? |  |  |  |
-| Disable CRUD methods |  |  |  |  |
-| In/Out mapping |  |  |  |  |
-| Bean validations |  |  |  |  |
-| DOC: interceptors |  |  |  |  |
-| DOC: CouchRestHandlerMapping/Adapter |  |  |  |  |
+| Logging | Setup, unhandled exceptions. Maybe even ProblemDetails? | [logging](concepts/logging.md) | Peter |  |
+| Disable CRUD methods |  |  | Peter |  |
+| In/Out mapping |  |  | Peter |  |
+| Bean validations |  |  | Peter |  |
+| DOC: interceptors |  |  | Peter |  |
+| DOC: CouchRestHandlerMapping/Adapter |  |  | Peter |  |
 
 ## Proposals
 
@@ -21,15 +21,15 @@ Here we collect loose ideas, which may be implemented.
 
 | Title | Description | Initiator | Concept |
 |---|---|---|---|
-| OpenAPI extension |  |  |  |
-| Batch requests |  |  |  |
-| Custom ID parser |  |  |  |
-| Exception handler |  |  |  |
-| Embed services (service mixin) |  |  |  |
-| Publish repository methods (like service mixin?) |  |  |  |
-| Service as published resource |  |  |  |
-| Event listeners | For CRUD operations, service calls, exceptions, ... (before, after, afterRequest?) |  |  |
-| Spring ApplicationEvents |  |  |  |
+| OpenAPI extension |  | Peter |  |
+| Batch requests |  | Peter |  |
+| Custom ID parser |  | Peter |  |
+| Exception handler |  | Peter |  |
+| Embed services (service mixin) |  | Peter |  |
+| Publish repository methods (like service mixin?) |  | Peter |  |
+| Service as published resource |  | Peter |  |
+| Event listeners | For CRUD operations, service calls, exceptions, ... (before, after, afterRequest?) | Peter |  |
+| Spring ApplicationEvents |  | Peter |  |
 
 ## Loose todos
 

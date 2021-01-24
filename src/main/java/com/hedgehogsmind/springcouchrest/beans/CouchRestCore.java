@@ -12,6 +12,8 @@ import com.hedgehogsmind.springcouchrest.workers.discovery.CouchRestDiscovery;
 import com.hedgehogsmind.springcouchrest.workers.mapping.MappedResource;
 import com.hedgehogsmind.springcouchrest.workers.mapping.entity.MappedEntityResource;
 import com.hedgehogsmind.springcouchrest.workers.springel.CouchRestSpelRoot;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
@@ -27,6 +29,8 @@ import java.util.Optional;
 import java.util.Set;
 
 public class CouchRestCore {
+
+    private static final Logger log = LoggerFactory.getLogger(CouchRestCore.class);
 
     private final ApplicationContext applicationContext;
 
@@ -75,13 +79,15 @@ public class CouchRestCore {
      */
     @PostConstruct
     public void setup() {
+        log.info("Welcome to CouchRest!");
+        log.info("Starting configuration of CouchRest.");
+
         init();
 
         fetchCouchRestConfiguration();
         applyCouchRestConfiguration();
 
-        this.couchRestDiscovery = new CouchRestDiscovery(applicationContext, entityManager);
-
+        discoverCouchRestResources();
         setupMappings();
     }
 
@@ -108,9 +114,13 @@ public class CouchRestCore {
      * @throws NoConfigurationFoundException       if no {@link CouchRestConfiguration} bean exists.
      */
     protected void fetchCouchRestConfiguration() {
+        log.info("Trying to obtain CouchRestConfiguration bean.");
+
         try {
             final CouchRestConfiguration bean = applicationContext.getBean(CouchRestConfiguration.class);
             this.couchRestConfiguration = new ValidatedAndNormalizedCouchRestConfiguration(bean);
+
+            log.info("CouchRestConfiguration bean successfully fetched.");
 
         } catch (NoUniqueBeanDefinitionException e) {
             throw new NoUniqueConfigurationFoundException("No unique CouchRestConfigurations found.");
@@ -129,6 +139,8 @@ public class CouchRestCore {
      * </ul>
      */
     protected void applyCouchRestConfiguration() {
+        log.info("Applying CouchRestConfiguration.");
+
         setupObjectMapper();
         setupSpringElEvaluationRootObject();
         setupBaseSecurityRule();
@@ -140,11 +152,17 @@ public class CouchRestCore {
      */
     protected void setupObjectMapper() {
         if (couchRestConfiguration.getCouchRestObjectMapper().isPresent()) {
+            log.info("Applying Jackson ObjectMapper specified in CouchRestConfiguration.");
             this.couchRestObjectMapper = couchRestConfiguration.getCouchRestObjectMapper().get();
+
         } else if (globalObjectMapper.isPresent()) {
+            log.info("Applying global Jackson ObjectMapper obtained via Spring dependency injection.");
             this.couchRestObjectMapper = globalObjectMapper.get();
+
         } else {
+            log.info("Instantiating new blank Jackson ObjectMapper.");
             this.couchRestObjectMapper = new ObjectMapper();
+
         }
     }
 
@@ -155,12 +173,22 @@ public class CouchRestCore {
      * Applies root object to {@link #getCouchRestSpelEvaluationContext()}.
      */
     protected void setupSpringElEvaluationRootObject() {
-        this.couchRestSpelEvaluationRootObject =
-                couchRestConfiguration.getSpringElEvaluationRootObject()
-                        .orElse(new CouchRestSpelRoot());
+        final Optional<Object> configurationSpelRootObject = couchRestConfiguration.getSpringElEvaluationRootObject();
 
+        if ( configurationSpelRootObject.isPresent() ) {
+            log.info("Applying SpringEL root object specified in CouchRestConfiguration.");
+            this.couchRestSpelEvaluationRootObject = configurationSpelRootObject.get();
+
+        } else {
+            log.info("Instantiating new blank SpringEL root object of type CouchRestSpelRoot.");
+            this.couchRestSpelEvaluationRootObject = new CouchRestSpelRoot();
+
+        }
+
+        log.info("Autowiring SpringEL root object.");
         applicationContext.getAutowireCapableBeanFactory().autowireBean(this.couchRestSpelEvaluationRootObject);
 
+        log.info("Applying root object to SpringEL evaluation context.");
         this.couchRestSpelEvaluationContext.setRootObject(
                 this.couchRestSpelEvaluationRootObject
         );
@@ -170,10 +198,12 @@ public class CouchRestCore {
      * Tries to parse base security rule and checks if it returns a boolean value.
      */
     protected void setupBaseSecurityRule() {
+        log.info("Parsing base security rule specified in CouchRestConfiguration.");
         couchRestBaseSecurityRule = couchRestSpelExpressionParser.parseExpression(
                 couchRestConfiguration.getBaseSecurityRule()
         );
 
+        log.info("Testing base security rule for boolean result.");
         final Object testResult = this.couchRestBaseSecurityRule.getValue(couchRestSpelEvaluationContext);
 
         if (!(testResult instanceof Boolean)) {
@@ -182,6 +212,7 @@ public class CouchRestCore {
                             (testResult != null ? testResult.getClass() : "null")
             );
         }
+        log.info("Base security rule is fine.");
     }
 
 
@@ -189,10 +220,12 @@ public class CouchRestCore {
      * Tries to parse default endpoint security rule and checks if it returns a boolean value.
      */
     protected void setupDefaultSecurityRule() {
+        log.info("Parsing default endpoint security rule specified in CouchRestConfiguration.");
         couchRestDefaultEndpointSecurityRule = couchRestSpelExpressionParser.parseExpression(
                 couchRestConfiguration.getDefaultEndpointSecurityRule()
         );
 
+        log.info("Testing default endpoint security rule for boolean result.");
         final Object testResult = this.couchRestDefaultEndpointSecurityRule.getValue(couchRestSpelEvaluationContext);
 
         if (!(testResult instanceof Boolean)) {
@@ -201,6 +234,18 @@ public class CouchRestCore {
                             (testResult != null ? testResult.getClass() : "null")
             );
         }
+        log.info("Default endpoint security rule is fine.");
+    }
+
+    /**
+     * Creates new {@link CouchRestDiscovery} with current {@link ApplicationContext} and {@link EntityManager}.
+     */
+    protected void discoverCouchRestResources() {
+        log.info("Discovering CouchRest resources.");
+        this.couchRestDiscovery = new CouchRestDiscovery(applicationContext, entityManager);
+
+        log.info("Nr. of CouchRest repositories found: {}", this.couchRestDiscovery.getDiscoveredCrudRepositories().size());
+        log.info("Nr. of CouchRest entities found: {}", this.couchRestDiscovery.getDiscoveredEntities().size());
     }
 
     /**
@@ -222,17 +267,26 @@ public class CouchRestCore {
      * </p>
      */
     protected void setupRepositoryMappings() {
-        couchRestDiscovery.getDiscoveredCrudRepositories().forEach(discoveredRepo -> {
-            final MappedEntityResource newRepositoryMapping = new MappedEntityResource(
-                    this,
-                    discoveredRepo,
-                    constructFullEntityResourcePathAndAssertNoPathClash(discoveredRepo),
-                    discoveredRepo.getEntityType(),
-                    discoveredRepo.getCrudRepository()
-            );
+        if ( couchRestDiscovery.getDiscoveredCrudRepositories().isEmpty() ) {
+            log.info("Skipping CRUD repo mapping creation, because no repo has been found for REST exposure.");
 
-            mappedResources.add(newRepositoryMapping);
-        });
+        } else {
+            log.info("Creating resource mappings for CRUD repositories.");
+
+            couchRestDiscovery.getDiscoveredCrudRepositories().forEach(discoveredRepo -> {
+                final MappedEntityResource newRepositoryMapping = new MappedEntityResource(
+                        this,
+                        discoveredRepo,
+                        constructFullEntityResourcePathAndAssertNoPathClash(discoveredRepo),
+                        discoveredRepo.getEntityType(),
+                        discoveredRepo.getCrudRepository()
+                );
+
+                mappedResources.add(newRepositoryMapping);
+            });
+
+            log.info("Creation of CRUD repository mappings finished.");
+        }
     }
 
     /**
@@ -248,44 +302,53 @@ public class CouchRestCore {
      * </p>
      */
     protected void setupEntityMappings() {
-        couchRestDiscovery.getDiscoveredEntities().forEach(discoveredEntity -> {
+        if ( couchRestDiscovery.getDiscoveredEntities().isEmpty() ) {
+            log.info("Skipping entity mapping creation, because no entity has been found for REST exposure.");
 
-            // First check if entity is already managed by a repo
-            final Optional<DiscoveredCrudRepository> discoveredRepo =
-                    couchRestDiscovery.getDiscoveredCrudRepositories().stream()
-                            .filter(dr -> dr.getEntityClass() == discoveredEntity.getEntityClass())
-                            .findAny();
+        } else {
+            log.info("Creating resource mappings for entities.");
 
-            if (discoveredRepo.isPresent()) {
-                throw new EntityAlreadyManagedByRepositoryException(
-                        "Entity '" + discoveredEntity.getEntityClass() + "' has been tagged with @CouchRest but is" +
-                                " already managed by a repository which is also tagged with @CouchRest.\n" +
-                                "Repository class: " + discoveredRepo.get().getTagAnnotationSource() + "\n" +
-                                "Remove the annotation on the repository or on the entity."
+            couchRestDiscovery.getDiscoveredEntities().forEach(discoveredEntity -> {
+
+                // First check if entity is already managed by a repo
+                final Optional<DiscoveredCrudRepository> discoveredRepo =
+                        couchRestDiscovery.getDiscoveredCrudRepositories().stream()
+                                .filter(dr -> dr.getEntityClass() == discoveredEntity.getEntityClass())
+                                .findAny();
+
+                if (discoveredRepo.isPresent()) {
+                    throw new EntityAlreadyManagedByRepositoryException(
+                            "Entity '" + discoveredEntity.getEntityClass() + "' has been tagged with @CouchRest but is" +
+                                    " already managed by a repository which is also tagged with @CouchRest.\n" +
+                                    "Repository class: " + discoveredRepo.get().getTagAnnotationSource() + "\n" +
+                                    "Remove the annotation on the repository or on the entity."
+                    );
+                }
+
+                // We need to create a new repository instance for the entity and
+                // apply bean processing > important for transactional proxies
+                final SimpleJpaRepository rawRepo = new SimpleJpaRepository(
+                        discoveredEntity.getEntityClass(),
+                        entityManager
                 );
-            }
+                final String newBeanName = "CouchRest-Entity-Repo-" + discoveredEntity.getEntityType().getName();
+                final SimpleJpaRepository finishedRepoBean = (SimpleJpaRepository) applicationContext
+                        .getAutowireCapableBeanFactory()
+                        .initializeBean(rawRepo, newBeanName);
 
-            // We need to create a new repository instance for the entity and
-            // apply bean processing > important for transactional proxies
-            final SimpleJpaRepository rawRepo = new SimpleJpaRepository(
-                    discoveredEntity.getEntityClass(),
-                    entityManager
-            );
-            final String newBeanName = "CouchRest-Entity-Repo-" + discoveredEntity.getEntityType().getName();
-            final SimpleJpaRepository finishedRepoBean = (SimpleJpaRepository) applicationContext
-                    .getAutowireCapableBeanFactory()
-                    .initializeBean(rawRepo, newBeanName);
+                final MappedEntityResource newEntityMapping = new MappedEntityResource(
+                        this,
+                        discoveredEntity,
+                        constructFullEntityResourcePathAndAssertNoPathClash(discoveredEntity),
+                        discoveredEntity.getEntityType(),
+                        finishedRepoBean
+                );
 
-            final MappedEntityResource newEntityMapping = new MappedEntityResource(
-                    this,
-                    discoveredEntity,
-                    constructFullEntityResourcePathAndAssertNoPathClash(discoveredEntity),
-                    discoveredEntity.getEntityType(),
-                    finishedRepoBean
-            );
+                mappedResources.add(newEntityMapping);
+            });
 
-            mappedResources.add(newEntityMapping);
-        });
+            log.info("Creation of entity mappings finished.");
+        }
     }
 
     /**
