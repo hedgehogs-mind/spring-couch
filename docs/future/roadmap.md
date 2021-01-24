@@ -8,7 +8,6 @@ Here we collect features that will definitely be implemented.
 
 | Title | Description | Priority | Initiator | Concept |
 |---|---|---|---|---|
-| Java 11 support |  |  |  |  |
 | Logging | Setup, unhandled exceptions. Maybe even ProblemDetails? |  |  |  |
 | Disable CRUD methods |  |  |  |  |
 | In/Out mapping |  |  |  |  |

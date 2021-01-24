@@ -27,6 +27,8 @@ CouchRest is a plugin for Spring. It enables you to publish resources very fast 
 
 This project is in its early days, so there are still a lot of features to implement.
 
+*__It requires at minimum Java 11.__*
+
 ## Getting started
 
 ### 1. Add dependency
