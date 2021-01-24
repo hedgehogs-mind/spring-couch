@@ -8,7 +8,6 @@ Here we collect features that will definitely be implemented.
 
 | Title | Description | Priority | Initiator | Concept |
 |---|---|---|---|---|
-| Logging | Setup, unhandled exceptions. Maybe even ProblemDetails? | [logging](concepts/logging.md) | Peter |  |
 | Disable CRUD methods |  |  | Peter |  |
 | In/Out mapping |  |  | Peter |  |
 | Bean validations |  |  | Peter |  |

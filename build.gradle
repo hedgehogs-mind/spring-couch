@@ -11,7 +11,7 @@ plugins {
 	id "com.jfrog.bintray" version "1.8.5"
 }
 
-String versionName = '0.0.2-ALPHA'
+String versionName = '0.0.3-ALPHA'
 
 group = 'com.hedgehogs-mind'
 version = versionName
