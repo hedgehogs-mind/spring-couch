@@ -2,12 +2,16 @@ package com.hedgehogsmind.springcouchrest.data.discovery;
 
 import com.hedgehogsmind.springcouchrest.annotations.CouchRest;
 import com.hedgehogsmind.springcouchrest.annotations.CouchRestModifierAnnotation;
+import com.hedgehogsmind.springcouchrest.data.discovery.exceptions.MultipleCouchRestModifierAnnotationsFoundException;
+import com.hedgehogsmind.springcouchrest.data.discovery.exceptions.RequiredCouchRestModifierAnnotationNotFoundException;
 import org.springframework.core.annotation.MergedAnnotation;
 
 import javax.persistence.metamodel.EntityType;
 import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Represents a unit/element which was tagged for CouchRest management
@@ -41,6 +45,63 @@ public abstract class DiscoveredUnit {
         this.couchRestModifierAnnotations = couchRestModifierAnnotations;
         this.entityClass = entityClass;
         this.entityType = entityType;
+    }
+
+    /**
+     * Basically returns {@link #getCouchRestModifierAnnotations()} and filters these annotations. Only those
+     * which are an instance of the given annotationType will be returned.
+     *
+     * @param annotationType Expected annotations' type.
+     * @return List of couch rest modifier annotation with the given annotation type.
+     */
+    public <T extends Annotation> List<T> getCouchRestModifierAnnotations(final Class<? extends T> annotationType) {
+        return this.couchRestModifierAnnotations.stream()
+                .filter(annotationType::isInstance)
+                .map(annotation -> (T) annotation)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Tries to fetch modifier annotation of given type. In case there are more than one, a
+     * {@link MultipleCouchRestModifierAnnotationsFoundException} will be thrown.
+     *
+     * @param annotationType Type of expected annotation.
+     * @return Annotation of empty if not present.
+     * @throws MultipleCouchRestModifierAnnotationsFoundException if there are more than one annotation instances.
+     */
+    public <T extends Annotation> Optional<T> getOptionalCouchRestModifierAnnotation(final Class<? extends T> annotationType) {
+        final List<T> foundAnnotations = getCouchRestModifierAnnotations(annotationType);
+
+        if ( foundAnnotations.size() > 1 ) {
+            throw new MultipleCouchRestModifierAnnotationsFoundException("Found more than one CouchRest modifier " +
+                    "annotation of type '"+annotationType+"'. Expected no or only one annotation " +
+                    "of that type. Discovered CouchRest element: "+tagAnnotationSource);
+
+        } else if ( foundAnnotations.size() == 1 ) {
+            return Optional.of(foundAnnotations.get(0));
+
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    /**
+     * Fetches annotation via {@link #getOptionalCouchRestModifierAnnotation(Class)}. In case the annotation is not
+     * present, a {@link RequiredCouchRestModifierAnnotationNotFoundException} will be thrown.
+     * @param annotationType Type of required annotation.
+     * @return Annotation instance of the given type.
+     * @throws RequiredCouchRestModifierAnnotationNotFoundException if the required annotation is not present.
+     */
+    public <T extends Annotation> T getRequiredCouchRestModifierAnnotation(final Class<? extends T> annotationType) {
+        final Optional<T> foundAnnotation = getOptionalCouchRestModifierAnnotation(annotationType);
+
+        if ( foundAnnotation.isEmpty() ) {
+            throw new RequiredCouchRestModifierAnnotationNotFoundException("Found no CouchRest modifier annotation " +
+                    "of type '"+annotationType+"', but was required. " +
+                    "Discovered CouchRest element: "+tagAnnotationSource);
+        }
+
+        return foundAnnotation.get();
     }
 
     /**

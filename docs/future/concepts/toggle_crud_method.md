@@ -20,3 +20,7 @@ __The annotation is meant to explicitly disable certain CRUD methods.__
 
 The annotation is allowed everywhere. It shall have only an impact on
 entities or repositories annotated with `@CouchRest`.
+
+## Impact
+
+For the disabled methods will no request handler be registered. This means, that Spring will handle this as a 404.

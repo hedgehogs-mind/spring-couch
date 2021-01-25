@@ -1,3 +1,6 @@
+- disable CRUD methods
+
+
 # CouchRestHandlerAdapter
 
 We need to test

@@ -38,18 +38,13 @@ public class ResourceCrudSecurityHandler extends ResourceSecurityHandler {
     public ResourceCrudSecurityHandler(final MappedEntityResource entityResource) {
         super(entityResource);
 
-        final List<CrudSecurity> crudSecurityAnnos =
-                entityResource.getMappingSource().getCouchRestModifierAnnotations()
-                        .stream()
-                        .filter(annotation -> annotation instanceof CrudSecurity)
-                        .map(annotation -> (CrudSecurity) annotation)
-                        .collect(Collectors.toList());
+        final Optional<CrudSecurity> crudSecurityAnnotation =
+                entityResource
+                        .getMappingSource()
+                        .getOptionalCouchRestModifierAnnotation(CrudSecurity.class);
 
-        if (crudSecurityAnnos.size() > 1 ) {
-            throw new IllegalStateException("Mapped CouchRest entity '" + entityResource.getEntityType().getJavaType() + "'" +
-                    " has more than one @CrudSecurity annotation. Max. one allowed.");
-        } else if (crudSecurityAnnos.size() == 1) {
-            final CrudSecurity securityRules = crudSecurityAnnos.get(0);
+        if ( crudSecurityAnnotation.isPresent() ) {
+            final CrudSecurity securityRules = crudSecurityAnnotation.get();
 
             readRule = securityRules.read().isBlank() ?
                     Optional.empty() :
