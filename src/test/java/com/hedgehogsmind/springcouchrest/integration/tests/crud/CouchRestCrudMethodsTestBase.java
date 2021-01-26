@@ -2,6 +2,7 @@ package com.hedgehogsmind.springcouchrest.integration.tests.crud;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hedgehogsmind.springcouchrest.integration.env.crud.AbstractTestNoteEntity;
 import com.hedgehogsmind.springcouchrest.integration.env.crud.TestNoteEntity;
 import com.hedgehogsmind.springcouchrest.rest.problemdetail.problems.CouchRestProblems;
 import org.json.JSONArray;
@@ -13,8 +14,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class CouchRestCrudMethodsTest
-        extends CouchRestCrudIntegrationTestBase {
+public abstract class CouchRestCrudMethodsTestBase<ET extends AbstractTestNoteEntity>
+        extends CouchRestAbstractCrudIntegrationTestBase<ET> {
 
     @Test
     public void testGetAll() throws JsonProcessingException  {
@@ -23,7 +24,7 @@ public class CouchRestCrudMethodsTest
 
         Assertions.assertEquals(persistedTestNotes.size(), response.length());
 
-        final List<TestNoteEntity> allNotes = new ArrayList<>(persistedTestNotes);
+        final List<ET> allNotes = new ArrayList<>(persistedTestNotes);
         for ( final Object element : response ) {
             final JSONObject jsonNote = (JSONObject) element;
             final TestNoteEntity note = core.getCouchRestObjectMapper().readValue(jsonNote.toString(), TestNoteEntity.class);
@@ -81,7 +82,7 @@ public class CouchRestCrudMethodsTest
 
         final ObjectMapper objectMapper = new ObjectMapper();
         final TestNoteEntity returnedEntity = objectMapper.readValue(response.toString(), TestNoteEntity.class);
-        final Optional<TestNoteEntity> persistedEntity = noteRepository.findById(returnedEntity.id);
+        final Optional<ET> persistedEntity = noteRepository.findById(returnedEntity.id);
 
         Assertions.assertTrue(persistedEntity.isPresent(), "new TestNoteEntity has not been persisted");
         Assertions.assertEquals(returnedEntity, persistedEntity.get(), "Persisted entity does not match " +
@@ -90,7 +91,7 @@ public class CouchRestCrudMethodsTest
 
     @Test
     void testUpdatingEntityThroughPathVariableId() {
-        final TestNoteEntity entity = persistedTestNotes.get(0);
+        final ET entity = persistedTestNotes.get(0);
         final long countBefore = noteRepository.count();
         final String newContent = "Totally new : "+System.currentTimeMillis();
 
@@ -103,13 +104,13 @@ public class CouchRestCrudMethodsTest
         Assertions.assertEquals(entity.id, response.getLong("id"));
         Assertions.assertEquals(newContent, response.getString("content"));
 
-        final TestNoteEntity entityFetchedAfterSave = noteRepository.findById(entity.id).get();
+        final ET entityFetchedAfterSave = noteRepository.findById(entity.id).get();
         Assertions.assertEquals(newContent, entityFetchedAfterSave.content);
     }
 
     @Test
     void testUpdatingSubSetOfFields() {
-        final TestNoteEntity entity = persistedTestNotes.get(0);
+        final ET entity = persistedTestNotes.get(0);
         final long countBefore = noteRepository.count();
 
         final String oldTitle = entity.title;
@@ -126,7 +127,7 @@ public class CouchRestCrudMethodsTest
         Assertions.assertEquals(entity.id, response.getLong("id"));
         Assertions.assertEquals(newContent, response.getString("content"));
 
-        final TestNoteEntity entityFetchedAfterSave = noteRepository.findById(entity.id).get();
+        final ET entityFetchedAfterSave = noteRepository.findById(entity.id).get();
         Assertions.assertEquals(newContent, entityFetchedAfterSave.content);
         Assertions.assertEquals(oldTitle, entityFetchedAfterSave.title);
         Assertions.assertEquals(oldRating, entityFetchedAfterSave.rating);
@@ -134,7 +135,7 @@ public class CouchRestCrudMethodsTest
 
     @Test
     void testUpdatingEntityThroughIdInBody() {
-        final TestNoteEntity entity = persistedTestNotes.get(0);
+        final ET entity = persistedTestNotes.get(0);
         final long countBefore = noteRepository.count();
         final String newContent = "Totally new : "+System.currentTimeMillis();
 
@@ -148,7 +149,7 @@ public class CouchRestCrudMethodsTest
         Assertions.assertEquals(entity.id, response.getLong("id"));
         Assertions.assertEquals(newContent, response.getString("content"));
 
-        final TestNoteEntity entityFetchedAfterSave = noteRepository.findById(entity.id).get();
+        final ET entityFetchedAfterSave = noteRepository.findById(entity.id).get();
         Assertions.assertEquals(newContent, entityFetchedAfterSave.content);
     }
 

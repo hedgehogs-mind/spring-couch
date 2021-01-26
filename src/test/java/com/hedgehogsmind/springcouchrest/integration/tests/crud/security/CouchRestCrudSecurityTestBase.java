@@ -1,7 +1,8 @@
 package com.hedgehogsmind.springcouchrest.integration.tests.crud.security;
 
 import com.hedgehogsmind.springcouchrest.configuration.CouchRestConfiguration;
-import com.hedgehogsmind.springcouchrest.integration.tests.crud.CouchRestCrudIntegrationTestBase;
+import com.hedgehogsmind.springcouchrest.integration.env.crud.AbstractTestNoteEntity;
+import com.hedgehogsmind.springcouchrest.integration.tests.crud.CouchRestAbstractCrudIntegrationTestBase;
 import com.hedgehogsmind.springcouchrest.rest.problemdetail.problems.CouchRestProblems;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,12 +12,8 @@ import org.junit.jupiter.api.Test;
  * With this test class we want to test the impact of
  * {@link CouchRestConfiguration#getBaseSecurityRule()} on the generated crud endpoints.
  */
-public abstract class CouchRestCrudSecurityTestBase
-        extends CouchRestCrudIntegrationTestBase {
-    
-    protected abstract String getEntityBasePath();
-    
-    protected abstract Object getSomeIdOfExistingEntity();
+public abstract class CouchRestCrudSecurityTestBase<ET extends AbstractTestNoteEntity>
+        extends CouchRestAbstractCrudIntegrationTestBase<ET> {
     
     protected abstract String getNeededAuthority();
 
@@ -33,7 +30,7 @@ public abstract class CouchRestCrudSecurityTestBase
 
     @Test
     void testGetAllWithoutAuth() {
-        final JSONObject res = getWithJsonObjectResponse(getEntityBasePath());
+        final JSONObject res = getWithJsonObjectResponse(getNoteBasePath());
 
         assertProblemDetailGiven(
                 CouchRestProblems.FORBIDDEN,
@@ -45,7 +42,7 @@ public abstract class CouchRestCrudSecurityTestBase
     void testGetAllWithAuthButMissingAuthority() {
         login();
 
-        final JSONObject res = getWithJsonObjectResponse(getEntityBasePath());
+        final JSONObject res = getWithJsonObjectResponse(getNoteBasePath());
 
         assertProblemDetailGiven(
                 CouchRestProblems.FORBIDDEN,
@@ -58,13 +55,13 @@ public abstract class CouchRestCrudSecurityTestBase
         setAuthoritiesOfTestUser(getNeededAuthority());
         login();
 
-        get(getEntityBasePath());
+        get(getNoteBasePath());
         assertStatusCode(200);
     }
 
     @Test
     void testGetOneWithoutAuth() {
-        final JSONObject res = getWithJsonObjectResponse(getEntityBasePath()+getSomeIdOfExistingEntity());
+        final JSONObject res = getWithJsonObjectResponse(getNoteBasePath()+getSomeNoteEntityId());
 
         assertProblemDetailGiven(
                 CouchRestProblems.FORBIDDEN,
@@ -76,7 +73,7 @@ public abstract class CouchRestCrudSecurityTestBase
     void testGetOneWithAuthButMissingAuthority() {
         login();
 
-        final JSONObject res = getWithJsonObjectResponse(getEntityBasePath()+getSomeIdOfExistingEntity());
+        final JSONObject res = getWithJsonObjectResponse(getNoteBasePath()+getSomeNoteEntityId());
 
         assertProblemDetailGiven(
                 CouchRestProblems.FORBIDDEN,
@@ -89,14 +86,14 @@ public abstract class CouchRestCrudSecurityTestBase
         setAuthoritiesOfTestUser(getNeededAuthority());
         login();
 
-        get(getEntityBasePath()+getSomeIdOfExistingEntity());
+        get(getNoteBasePath()+getSomeNoteEntityId());
         assertStatusCode(200);
     }
 
     @Test
     void testPostNewAllWithoutAuth() {
         final String newNoteJson = "{\"title\":\"New test note\",\"content\":\"Time: "+System.currentTimeMillis()+"\",\"rating\":4}";
-        final JSONObject res = postWithJsonObjectResponse(getEntityBasePath(), newNoteJson);
+        final JSONObject res = postWithJsonObjectResponse(getNoteBasePath(), newNoteJson);
 
         assertProblemDetailGiven(CouchRestProblems.FORBIDDEN, res);
     }
@@ -106,7 +103,7 @@ public abstract class CouchRestCrudSecurityTestBase
         login();
 
         final String newNoteJson = "{\"title\":\"New test note\",\"content\":\"Time: "+System.currentTimeMillis()+"\",\"rating\":4}";
-        final JSONObject res = postWithJsonObjectResponse(getEntityBasePath(), newNoteJson);
+        final JSONObject res = postWithJsonObjectResponse(getNoteBasePath(), newNoteJson);
 
         assertProblemDetailGiven(CouchRestProblems.FORBIDDEN, res);
     }
@@ -117,14 +114,14 @@ public abstract class CouchRestCrudSecurityTestBase
         login();
 
         final String newNoteJson = "{\"title\":\"New test note\",\"content\":\"Time: "+System.currentTimeMillis()+"\",\"rating\":4}";
-        post(getEntityBasePath(), newNoteJson);
+        post(getNoteBasePath(), newNoteJson);
         assertStatusCode(200);
     }
 
     @Test
     void testPostUpdateWithoutAuth() {
         final String updateJson = "{\"content\": \"New: "+System.currentTimeMillis()+"\"}";
-        final JSONObject res = postWithJsonObjectResponse(getEntityBasePath()+getSomeIdOfExistingEntity(), updateJson);
+        final JSONObject res = postWithJsonObjectResponse(getNoteBasePath()+getSomeNoteEntityId(), updateJson);
         assertProblemDetailGiven(CouchRestProblems.FORBIDDEN, res);
     }
 
@@ -133,7 +130,7 @@ public abstract class CouchRestCrudSecurityTestBase
         login();
 
         final String updateJson = "{\"content\": \"New: "+System.currentTimeMillis()+"\"}";
-        final JSONObject res = postWithJsonObjectResponse(getEntityBasePath()+getSomeIdOfExistingEntity(), updateJson);
+        final JSONObject res = postWithJsonObjectResponse(getNoteBasePath()+getSomeNoteEntityId(), updateJson);
         assertProblemDetailGiven(CouchRestProblems.FORBIDDEN, res);
     }
 
@@ -143,13 +140,13 @@ public abstract class CouchRestCrudSecurityTestBase
         login();
 
         final String updateJson = "{\"content\": \"New: "+System.currentTimeMillis()+"\"}";
-        postWithJsonObjectResponse(getEntityBasePath()+getSomeIdOfExistingEntity(), updateJson);
+        postWithJsonObjectResponse(getNoteBasePath()+getSomeNoteEntityId(), updateJson);
         assertStatusCode(200);
     }
 
     @Test
     void testDeleteWithoutAuth() {
-        final JSONObject res = deleteWithJsonObjectResponse(getEntityBasePath()+getSomeIdOfExistingEntity());
+        final JSONObject res = deleteWithJsonObjectResponse(getNoteBasePath()+getSomeNoteEntityId());
         assertProblemDetailGiven(CouchRestProblems.FORBIDDEN, res);
     }
 
@@ -157,7 +154,7 @@ public abstract class CouchRestCrudSecurityTestBase
     void testDeleteWithAuthButMissingAuthority() {
         login();
 
-        final JSONObject res = deleteWithJsonObjectResponse(getEntityBasePath()+getSomeIdOfExistingEntity());
+        final JSONObject res = deleteWithJsonObjectResponse(getNoteBasePath()+getSomeNoteEntityId());
         assertProblemDetailGiven(CouchRestProblems.FORBIDDEN, res);
     }
 
@@ -166,7 +163,7 @@ public abstract class CouchRestCrudSecurityTestBase
         setAuthoritiesOfTestUser(getNeededAuthority());
         login();
 
-        delete(getEntityBasePath()+getSomeIdOfExistingEntity());
+        delete(getNoteBasePath()+getSomeNoteEntityId());
         assertStatusCode(200);
     }
 }

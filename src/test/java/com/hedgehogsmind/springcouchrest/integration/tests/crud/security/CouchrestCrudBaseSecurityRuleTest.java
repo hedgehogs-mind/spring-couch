@@ -1,16 +1,8 @@
 package com.hedgehogsmind.springcouchrest.integration.tests.crud.security;
 
-public class CouchrestCrudBaseSecurityRuleTest extends CouchRestCrudSecurityTestBase {
+import com.hedgehogsmind.springcouchrest.integration.env.crud.TestNoteEntity;
 
-    @Override
-    protected String getEntityBasePath() {
-        return getNoteBasePath();
-    }
-
-    @Override
-    protected Object getSomeIdOfExistingEntity() {
-        return getSomeNoteEntityId();
-    }
+public class CouchrestCrudBaseSecurityRuleTest extends CouchRestCrudSecurityTestBase<TestNoteEntity> {
 
     @Override
     protected String getNeededAuthority() {
