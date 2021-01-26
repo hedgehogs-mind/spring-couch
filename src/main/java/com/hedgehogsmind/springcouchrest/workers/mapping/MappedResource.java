@@ -7,6 +7,7 @@ import com.hedgehogsmind.springcouchrest.util.RequestUtil;
 import org.springframework.http.ResponseEntity;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -35,10 +36,16 @@ public abstract class MappedResource
 
     private final String resourcePathWithTrailingSlash;
 
-    private final List<MappingHandler> subMappingHandlers;
+    private List<MappingHandler> subMappingHandlers = new ArrayList<>();
 
     /**
-     * Stores path and initializes sub mapping handlers by calling {@link #createSubMappingHandlers()}.
+     * <p>
+     *     Stores path.
+     * </p>
+     *
+     * <p>
+     *     <b>Do not forget to call {@link #setup()} after the initialization!</b>
+     * </p>
      *
      * @param core                          CouchRest core instance which created this resource.
      * @param discoveredUnit                Source for the mapping.
@@ -60,6 +67,12 @@ public abstract class MappedResource
         this.core = core;
         this.discoveredUnit = discoveredUnit;
         this.resourcePathWithTrailingSlash = resourcePathWithTrailingSlash;
+    }
+
+    /**
+     * Initializes the sub mapping handlers by calling {@link #createSubMappingHandlers()}.
+     */
+    public void setup() {
         this.subMappingHandlers = createSubMappingHandlers();
 
         if (this.subMappingHandlers == null) {

@@ -282,6 +282,8 @@ public class CouchRestCore {
                         discoveredRepo.getCrudRepository()
                 );
 
+                newRepositoryMapping.setup();
+
                 mappedResources.add(newRepositoryMapping);
             });
 
@@ -343,6 +345,8 @@ public class CouchRestCore {
                         discoveredEntity.getEntityType(),
                         finishedRepoBean
                 );
+
+                newEntityMapping.setup();
 
                 mappedResources.add(newEntityMapping);
             });
