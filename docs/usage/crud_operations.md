@@ -12,6 +12,7 @@ for **C**reate, **R**ead, **U**pdate and **D**elete.
    - [Read](#read)   
    - [Update](#update)   
    - [Delete](#delete)   
+- [Disabling certain CRUD methods](#disabling-certain-crud-methods)   
 - [Security](#security)   
 
 <!-- /MDTOC -->

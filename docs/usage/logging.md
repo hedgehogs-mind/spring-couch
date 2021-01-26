@@ -1,5 +1,12 @@
 # Logging
 
+<!-- MDTOC maxdepth:6 firsth1:0 numbering:0 flatten:0 bullets:1 updateOnSave:1 -->
+
+- [CouchRestCore](#couchrestcore)   
+- [CouchRestHandlerAdapter](#couchresthandleradapter)   
+
+<!-- /MDTOC -->
+
 ## CouchRestCore
 
 The core of CouchRest logs information about the setup process. This includes e.g. which object mapper

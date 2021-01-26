@@ -2,6 +2,14 @@
 
 This document serves as a collection of possible features for the future.
 
+<!-- MDTOC maxdepth:6 firsth1:0 numbering:0 flatten:0 bullets:1 updateOnSave:1 -->
+
+- [Carved in stone](#carved-in-stone)   
+- [Proposals](#proposals)   
+- [Loose todos](#loose-todos)   
+
+<!-- /MDTOC -->
+
 ## Carved in stone
 
 Here we collect features that will definitely be implemented.
@@ -45,4 +53,3 @@ Here we collect loose ideas, which may be implemented.
 - mapping test for both
     - entity with @CouchRest and
     - repo with @CouchRest
-  
