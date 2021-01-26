@@ -9,6 +9,7 @@ Here we collect features that will definitely be implemented.
 | Title | Description | Priority | Initiator | Concept |
 |---|---|---|---|---|
 | Disable CRUD methods |  |  | Peter |  |
+| Disable @CouchRest on repos > instead maybe repo mixin like service mixin? |  |  | Peter |  |
 | Move entity class & type from DiscoveredUnit to DiscoveredEntity |  |  | Peter |  |
 | In/Out mapping |  |  | Peter |  |
 | Bean validations |  |  | Peter |  |
@@ -25,7 +26,7 @@ Here we collect loose ideas, which may be implemented.
 | Batch requests |  | Peter |  |
 | Custom ID parser |  | Peter |  |
 | Exception handler |  | Peter |  |
-| Embed services (service mixin) |  | Peter |  |
+| Embed services/repos? (service/repo ... "BEAN" mixin?) |  | Peter |  |
 | Publish repository methods (like service mixin?) |  | Peter |  |
 | Service as published resource |  | Peter |  |
 | Event listeners | For CRUD operations, service calls, exceptions, ... (before, after, afterRequest?) | Peter |  |
