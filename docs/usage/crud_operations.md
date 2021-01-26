@@ -168,6 +168,33 @@ that path.
 
 Here is an example for deleting the entity with id "1": `DELETE /api/tree/1`. There will be no result data.
 
+## Disabling certain CRUD methods
+
+By default, all CRUD methods will be enabled. If you want to suppress one of the methods to be exposed via REST,
+you can do that by adding the annotation `@CrudMethods`. You then need to set the attributes to `false`,
+which correspond to the CRUD method(s) you want to disable. An example:
+
+```
+@Entity
+@CouchRest
+@CrudMethods(
+  saveUpdate = false,
+  delete = false
+)
+public class Tree {
+
+  ...
+
+}
+```
+
+You can disable the following methods:
+
+- `get`: Disables GET all and GET one (by id).
+- `saveUpdate`: Disables POST for new entity and POST with ID in path for updates.
+- `delete`: Disables DELETE (by id).
+
+
 ## Security
 
 You can secure all CRUD operations individually using the annotation `@CrudSecurity`. Checkout the

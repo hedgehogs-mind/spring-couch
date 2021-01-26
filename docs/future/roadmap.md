@@ -8,7 +8,6 @@ Here we collect features that will definitely be implemented.
 
 | Title | Description | Priority | Initiator | Concept |
 |---|---|---|---|---|
-| Disable CRUD methods |  |  | Peter |  |
 | Disable @CouchRest on repos > instead maybe repo mixin like service mixin? |  |  | Peter |  |
 | Move entity class & type from DiscoveredUnit to DiscoveredEntity |  |  | Peter |  |
 | In/Out mapping |  |  | Peter |  |
